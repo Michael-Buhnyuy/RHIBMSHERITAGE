@@ -1,0 +1,19 @@
+[
+  {"year": 2010, "totalStudents": 50},
+  {"year": 2011, "totalStudents": 120},
+  {"year": 2012, "totalStudents": 200},
+  {"year": 2013, "totalStudents": 350},
+  {"year": 2014, "totalStudents": 520},
+  {"year": 2015, "totalStudents": 780},
+  {"year": 2016, "totalStudents": 1050},
+  {"year": 2017, "totalStudents": 1420},
+  {"year": 2018, "totalStudents": 1850},
+  {"year": 2019, "totalStudents": 2300},
+  {"year": 2020, "totalStudents": 2850},
+  {"year": 2021, "totalStudents": 3400},
+  {"year": 2022, "totalStudents": 4050},
+  {"year": 2023, "totalStudents": 4750},
+  {"year": 2024, "totalStudents": 5500},
+  {"year": 2025, "totalStudents": 6200},
+  {"year": 2026, "totalStudents": 7000}
+]

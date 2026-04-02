@@ -1,0 +1,80 @@
+[
+  {
+    "year": 2009,
+    "title": "Genesis",
+    "description": "Visionary founding of RHIBMS by Dr. Emmanuel N. Redemption.",
+    "type": "milestone"
+  },
+  {
+    "year": 2010,
+    "title": "First Cohort",
+    "description": "50 pioneering students enrolled in Biomedical program.",
+    "type": "milestone"
+  },
+  {
+    "year": 2012,
+    "title": "Management Sciences Launch",
+    "description": "Second program introduced, expanding to 200 students.",
+    "type": "milestone"
+  },
+  {
+    "year": 2015,
+    "title": "Infrastructure Expansion",
+    "description": "New campus facilities and first international partnership.",
+    "type": "event"
+  },
+  {
+    "year": 2017,
+    "title": "Student Milestone",
+    "description": "Surpassed 1000 students. First staff recognition ceremony.",
+    "type": "milestone"
+  },
+  {
+    "year": 2019,
+    "title": "Global Recognition",
+    "description": "Partnership with Harvard Medical School established.",
+    "type": "award"
+  },
+  {
+    "year": 2020,
+    "title": "Resilience Amid Challenges",
+    "description": "Adapted to global pandemic, maintained growth trajectory.",
+    "type": "milestone"
+  },
+  {
+    "year": 2021,
+    "title": "Community Impact",
+    "description": "Borehole donation to Mayor Street community.",
+    "type": "event"
+  },
+  {
+    "year": 2022,
+    "title": "Transportation Upgrade",
+    "description": "Acquisition of two school buses for student transport.",
+    "type": "milestone"
+  },
+  {
+    "year": 2023,
+    "title": "Starlink Connectivity",
+    "description": "High-speed internet access for all students.",
+    "type": "milestone"
+  },
+  {
+    "year": 2024,
+    "title": "International Tours Begin",
+    "description": "First student exchange programs launched.",
+    "type": "event"
+  },
+  {
+    "year": 2025,
+    "title": "7000+ Students Served",
+    "description": "Cumulative milestone reached. Heritage preservation initiative.",
+    "type": "milestone"
+  },
+  {
+    "year": 2026,
+    "title": "Digital Archive Launch",
+    "description": "RHIBMS Heritage website goes live.",
+    "type": "milestone"
+  }
+]
