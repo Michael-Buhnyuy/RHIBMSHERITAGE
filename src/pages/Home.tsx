@@ -136,7 +136,16 @@ export default function Home() {
       {/* STATS */}
       <AnimatedSection delay={0.1}>
         <section className="py-20 bg-white">
-          <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+<div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+  <div className="text-center mb-16 col-span-full">
+    <h2 className="text-4xl font-bold text-gray-800">
+      OUR ACHIEVEMENTS
+    </h2>
+    <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+      Celebrating our growth and impact
+    </p>
+    <div className="w-24 h-1 bg-gradient-to-r from-rhibms-red-500 to-rhibms-sky-500 mx-auto mt-4 rounded-full" />
+  </div>
             {stats.map((stat, index) => (
               <motion.div
                 key={index}
@@ -163,7 +172,16 @@ export default function Home() {
       {/* VISION & MISSION */}
       <AnimatedSection delay={0.2}>
         <section className="py-24 bg-gray-50">
-          <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-10">
+<div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-10">
+  <div className="text-center mb-16 col-span-full">
+    <h2 className="text-4xl font-bold text-gray-800">
+      MISSION & VISION
+    </h2>
+    <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+      Our guiding principles and future aspirations
+    </p>
+    <div className="w-24 h-1 bg-gradient-to-r from-rhibms-red-500 to-rhibms-sky-500 mx-auto mt-4 rounded-full" />
+  </div>
             <div className="p-10 bg-white rounded-2xl shadow hover:shadow-xl transition">
               <Target className="w-12 h-12 text-rhibms-red-600 mb-4" />
               <h3 className="text-2xl font-bold mb-4">Mission</h3>
@@ -194,7 +212,16 @@ export default function Home() {
       {/* CHART */}
       <AnimatedSection delay={0.3}>
         <section className="py-24 bg-white">
-          <div className="max-w-6xl mx-auto px-4">
+<div className="max-w-6xl mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-gray-800">
+                STUDENT GROWTH
+              </h2>
+              <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+                Tracking our expansion year by year
+              </p>
+              <div className="w-24 h-1 bg-gradient-to-r from-rhibms-red-500 to-rhibms-sky-500 mx-auto mt-4 rounded-full" />
+            </div>
             <ResponsiveContainer width="100%" height={400}>
               <AreaChart data={metricsData}>
                 <CartesianGrid strokeDasharray="3 3" />
