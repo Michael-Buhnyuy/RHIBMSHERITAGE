@@ -43,8 +43,6 @@ const faqItems: FAQItem[] = [
   },
 ];
 
-const latestFAQ = faqItems[0];
-
 interface NavbarProps {
   onAdminClick: () => void;
 }

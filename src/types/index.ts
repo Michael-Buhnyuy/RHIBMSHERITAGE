@@ -6,16 +6,18 @@ export interface Partner {
 }
 
 export interface TimelineEvent {
-  date: string;
+  year: number;
+  type: 'milestone' | 'event' | 'award' | 'team' | 'other';
   title: string;
   description: string;
   icon?: string;
 }
 
 export interface Program {
-  name: string;
+  id: string;
+  title: string;
   description: string;
   image: string;
+  duration: string;
   icon?: string;
-  duration?: string;
 }
