@@ -1,4 +1,4 @@
-import { LucideIcon } from 'lucide-react';
+
 
 export interface ImageItem {
   src: string;
