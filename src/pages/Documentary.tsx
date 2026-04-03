@@ -8,6 +8,8 @@ import {
   Trophy
 } from 'lucide-react';
 
+import { motion, AnimatePresence } from 'framer-motion';
+
 /* ================= TYPES ================= */
 
 interface ImageItem {
@@ -63,8 +65,6 @@ const groupImages = (modules: Record<string, string>) => {
 
 /* ================= STATIC GLOBS ================= */
 
-// ✅ MUST be static paths (Vite requirement)
-
 const intlModules = import.meta.glob(
   '/src/assets/images/Intenational_Tour/*/*.{jpg,jpeg,png}',
   { eager: true, as: 'url' }
@@ -111,34 +111,21 @@ const awards = groupImages(awardModules).map(g => ({
 
 export default function Documentary({ data }: DocumentaryProps) {
   const [sliderIndex, setSliderIndex] = useState<Record<string, number>>({});
+  const autoRef = useRef<Record<string, ReturnType<typeof setInterval>>>({});
 
-  const mergedInternationalTours = [
-    ...(data?.internationalTours ?? []),
-    ...internationalTours,
-  ];
-
-  const mergedNationalTours = [
-    ...(data?.nationalTours ?? []),
-    ...nationalTours,
-  ];
-
-  const mergedEvents = [
-    ...(data?.events ?? []),
-    ...events,
-  ];
-
-  const mergedAwards = [
-    ...(data?.awards ?? []),
-    ...awards,
-  ];
   const [lightbox, setLightbox] = useState<{
     images: ImageItem[];
     index: number;
   } | null>(null);
 
-  const [activeFilter] = useState<'all' | 'international' | 'national' | 'awards-events'>('all');
+  /* 🔥 NEW STATES */
+  const [zoomed, setZoomed] = useState(false);
+  const [direction, setDirection] = useState(0); // 🎬 animation direction
 
-  const autoRef = useRef<Record<string, ReturnType<typeof setInterval>>>({});
+  const mergedInternationalTours = [...(data?.internationalTours ?? []), ...internationalTours];
+  const mergedNationalTours = [...(data?.nationalTours ?? []), ...nationalTours];
+  const mergedEvents = [...(data?.events ?? []), ...events];
+  const mergedAwards = [...(data?.awards ?? []), ...awards];
 
   const getIndex = (key: string) => sliderIndex[key] || 0;
 
@@ -168,10 +155,14 @@ export default function Documentary({ data }: DocumentaryProps) {
     delete autoRef.current[key];
   };
 
-  const closeLightbox = () => setLightbox(null);
+  const closeLightbox = () => {
+    setLightbox(null);
+    setZoomed(false);
+  };
 
   const nextLightbox = () => {
     if (!lightbox) return;
+    setDirection(1);
     setLightbox({
       ...lightbox,
       index: (lightbox.index + 1) % lightbox.images.length
@@ -180,6 +171,7 @@ export default function Documentary({ data }: DocumentaryProps) {
 
   const prevLightbox = () => {
     if (!lightbox) return;
+    setDirection(-1);
     setLightbox({
       ...lightbox,
       index:
@@ -279,23 +271,98 @@ export default function Documentary({ data }: DocumentaryProps) {
         DOCUMENTARY ARCHIVE
       </h1>
 
-      {(activeFilter === 'all' || activeFilter === 'international') &&
-        renderSection('INTERNATIONAL TOURS', mergedInternationalTours)}
+      {renderSection('INTERNATIONAL TOURS', mergedInternationalTours)}
+      {renderSection('NATIONAL TOURS', mergedNationalTours)}
+      {renderSection('EVENTS', mergedEvents)}
+      {renderSection('AWARDS', mergedAwards)}
 
-      {(activeFilter === 'all' || activeFilter === 'national') &&
-        renderSection('NATIONAL TOURS', mergedNationalTours)}
+      {/* 🎬 CINEMATIC LIGHTBOX */}
+      <AnimatePresence mode="wait">
+        {lightbox && (
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/95 flex items-center justify-center z-50"
+          >
 
-      {(activeFilter === 'all' || activeFilter === 'awards-events') &&
-        renderSection('EVENTS', mergedEvents)}
+            {/* LEFT */}
+            <button
+              onClick={prevLightbox}
+              className="absolute left-6 text-white bg-black/40 p-3 rounded-full z-50"
+            >
+              <ChevronLeft size={30} />
+            </button>
 
-      {(activeFilter === 'all' || activeFilter === 'awards-events') &&
-        renderSection('AWARDS', mergedAwards)}
+            {/* IMAGE */}
+            <div
+              className="overflow-hidden flex items-center justify-center"
+              onClick={() => setZoomed(z => !z)}
+            >
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={lightbox.index}
+                  src={lightbox.images[lightbox.index].src}
 
-      {lightbox && (
-        <div className="fixed inset-0 bg-black/90 flex items-center justify-center">
-          <img src={lightbox.images[lightbox.index].src} />
-        </div>
-      )}
+                  initial={{
+                    x: direction > 0 ? 100 : -100,
+                    opacity: 0,
+                    scale: 0.95
+                  }}
+                  animate={{
+                    x: 0,
+                    opacity: 1,
+                    scale: zoomed ? 1.5 : 1
+                  }}
+                  exit={{
+                    x: direction > 0 ? -100 : 100,
+                    opacity: 0,
+                    scale: 0.95
+                  }}
+
+                  transition={{
+                    duration: 0.5,
+                    ease: 'easeInOut'
+                  }}
+
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.2}
+                  onDragEnd={(e, info) => {
+                    if (info.offset.x > 100) prevLightbox();
+                    if (info.offset.x < -100) nextLightbox();
+                  }}
+
+                  className="max-h-[85vh] object-contain cursor-pointer"
+                />
+              </AnimatePresence>
+            </div>
+
+            {/* RIGHT */}
+            <button
+              onClick={nextLightbox}
+              className="absolute right-6 text-white bg-black/40 p-3 rounded-full z-50"
+            >
+              <ChevronRight size={30} />
+            </button>
+
+            {/* CLOSE */}
+            <button
+              onClick={closeLightbox}
+              className="absolute top-6 right-6 text-white text-3xl z-50"
+            >
+              ✕
+            </button>
+
+            {/* COUNTER */}
+            <div className="absolute bottom-6 text-white text-lg z-50">
+              {lightbox.index + 1} / {lightbox.images.length}
+            </div>
+
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
