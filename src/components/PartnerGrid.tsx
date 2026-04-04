@@ -1,5 +1,6 @@
 import partnersData from '../data/partners.json';
 import { Partner } from '../types';
+import { partnerImages } from '../utils/imageHelpers';
 
 interface PartnerGridProps {
   className?: string;
@@ -8,6 +9,8 @@ interface PartnerGridProps {
 export function PartnerGrid({ className = '' }: PartnerGridProps) {
   const national = partnersData.filter((p) => p.type === 'national') as Partner[];
   const international = partnersData.filter((p) => p.type === 'international') as Partner[];
+
+  const getPartnerImage = (partner: Partner) => partner.imageId ? partnerImages[partner.imageId] || '/fallback-partner.jpg' : '/fallback-partner.jpg';
 
   return (
     <div className={`py-20 ${className}`}>
@@ -31,7 +34,7 @@ export function PartnerGrid({ className = '' }: PartnerGridProps) {
                   <h4 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 group-hover:text-rhibms-red-600 transition-colors">{partner.name}</h4>
                   <div className="w-full h-72 rounded-2xl overflow-hidden shadow-lg mb-8">
                     <img
-                      src={partner.image}
+                      src={getPartnerImage(partner)}
                       alt={partner.name}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
@@ -53,7 +56,7 @@ export function PartnerGrid({ className = '' }: PartnerGridProps) {
                   <h4 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 group-hover:text-rhibms-sky-600 transition-colors">{partner.name}</h4>
                   <div className="w-full h-72 rounded-2xl overflow-hidden shadow-lg mb-8">
                     <img
-                      src={partner.image}
+                      src={getPartnerImage(partner)}
                       alt={partner.name}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
@@ -68,3 +71,4 @@ export function PartnerGrid({ className = '' }: PartnerGridProps) {
     </div>
   );
 }
+

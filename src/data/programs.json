@@ -4,41 +4,41 @@
     "title": "School Of Agriculture",
     "description": "Sustainable farming practices and modern agribusiness. Precision agriculture, crop improvement, livestock management, soil conservation, agricultural economics, extension services. State-of-the-art greenhouses, tissue culture labs, precision farming equipment. Partnerships with research institutes.",
     "duration": "4 years",
-    "image": "/src/assets/images/programs/agriculture.jpg"
+    "imageId": "agriculture"
   },
   {
     "id": "arts-education",
     "title": "School Of Arts And Education",
     "description": "Teacher training and creative arts excellence. Pedagogy, curriculum development, educational psychology, fine arts, music, drama, languages. Multimedia studios, performance theaters, digital classrooms, language labs. International teacher exchange programs.",
     "duration": "4 years",
-    "image": "/src/assets/images/programs/rhimsesco.jpg"
+    "imageId": "rhimsesco"
   },
   {
     "id": "biomedical",
     "title": "School Of Biomedical Sciences",
     "description": "Cutting-edge healthcare and medical research. Anatomy, physiology, microbiology, pathology, pharmacology, public health. Modern laboratories, clinical training facilities, research centers, simulation labs. Hospital and clinic partnerships.",
     "duration": "4 years",
-    "image": "/src/assets/images/programs/biomedical.jpg"
+    "imageId": "biomedical"
   },
   {
     "id": "engineering",
     "title": "School Of Engineering",
     "description": "Infrastructure and technological innovation. Civil, electrical, mechanical, computer engineering. CAD labs, electronics workshops, fabrication facilities, renewable energy center. Industry internship programs.",
     "duration": "5 years",
-    "image": "/src/assets/images/programs/enginering.jpg"
+    "imageId": "enginering"
   },
   {
     "id": "home-economics-social-work",
     "title": "School Of Home Economics And Social Work",
     "description": "Family welfare and community development. Nutrition, family studies, social work, counseling, community health. Demonstration kitchens, counseling centers, community outreach programs. NGO and government partnerships.",
     "duration": "4 years",
-    "image": "/src/assets/images/programs/homeeconomics.jpg"
+    "imageId": "homeeconomics"
   },
   {
     "id": "management",
     "title": "School Of Management Sciences",
     "description": "Business leadership and strategic management. Accounting, marketing, human resources, entrepreneurship, healthcare management. Business incubation center, trading simulation room, executive training suites. Corporate partnerships.",
     "duration": "4 years",
-    "image": "/src/assets/images/programs/management_science.jpg"
+    "imageId": "management_science"
   }
 ]

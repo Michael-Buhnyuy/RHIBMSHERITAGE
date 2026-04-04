@@ -1,26 +1,26 @@
-[
+[ 
   {
     "name": "University of Bamenda",
     "type": "national",
-    "image": "src/assets/images/partners/university_of_Bamenda.jpg",
+    "imageId": "university_of_Bamenda",
     "description": "Local partner for management training programs."
   },
   {
     "name": "University of Buea",
     "type": "national",
-    "image": "src/assets/images/partners/University_of_Buea.jpg",
+    "imageId": "University_of_Buea",
     "description": "Healthcare partner and internship provider."
   },
   {
     "name": "University of Florida",
     "type": "international",
-    "image": "src/assets/images/partners/florida.jpg",
+    "imageId": "florida",
     "description": "International exchange and research collaboration."
   },
   {
     "name": "UMES",
     "type": "international",
-    "image": "src/assets/images/partners/UMES.jpg",
+    "imageId": "UMES",
     "description": "Biomedical engineering partnership."
   }
 ]

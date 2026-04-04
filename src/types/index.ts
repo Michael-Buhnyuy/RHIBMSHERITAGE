@@ -1,6 +1,7 @@
 export interface Partner {
   name: string;
-  image: string;
+  image?: string;
+  imageId?: string;
   description?: string;
   url?: string;
 }
@@ -17,7 +18,9 @@ export interface Program {
   id: string;
   title: string;
   description: string;
-  image: string;
+  image?: string;
+  imageId?: string;
   duration: string;
   icon?: string;
 }
+

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 // Navbar and Footer now in App.tsx
 import programsData from '../data/programs.json';
 import { Program } from '../types';
+import { programImages } from '../utils/imageHelpers';
 import { Users, BookOpen, Clock, Award } from 'lucide-react';
 
 const ProgramCard: React.FC<{ program: Program; onClick: () => void }> = ({ program, onClick }) => (
@@ -13,7 +14,7 @@ const ProgramCard: React.FC<{ program: Program; onClick: () => void }> = ({ prog
       <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-4 group-hover:text-rhibms-red-600 transition-colors flex-shrink-0">{program.title}</h3>
       <div className="w-full h-40 md:h-48 rounded-2xl overflow-hidden shadow-lg mb-4 flex-shrink-0">
         <img 
-          src={program.image} 
+          src={program.imageId ? programImages[program.imageId] || '/assets/fallback-program.jpg' : '/assets/fallback-program.jpg'} 
           alt={program.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
@@ -61,7 +62,7 @@ const ProgramDetail: React.FC<{ program: Program; onClose: () => void }> = ({ pr
         <div className="grid lg:grid-cols-2 gap-12 items-start mb-12">
           <div>
             <div className="w-full h-80 rounded-3xl overflow-hidden shadow-2xl mb-8">
-              <img src={program.image} alt={program.title} className="w-full h-full object-cover" />
+              <img src={program.imageId ? programImages[program.imageId] || '/assets/fallback-program.jpg' : '/assets/fallback-program.jpg'} alt={program.title} className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-wrap gap-3">
               <div className="px-6 py-3 bg-gradient-to-r from-rhibms-red-500 to-rhibms-red-600 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all">
