@@ -46,7 +46,7 @@ const getIcon = (key: keyof DocumentaryData) => {
   }
 };
 
-export default function Admin({ setData, onLogout }: AdminProps) {
+export default function Admin({ setData }: AdminProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<keyof DocumentaryData>('internationalTours');
@@ -109,14 +109,7 @@ export default function Admin({ setData, onLogout }: AdminProps) {
     <div style={{ maxWidth: 900, margin: '2rem auto', padding: 20, background: '#fff', borderRadius: 12, boxShadow: '0 8px 18px rgba(0,0,0,0.08)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
         <h1 style={{ margin: 0 }}>Admin Panel</h1>
-        {onLogout && (
-          <button
-            onClick={onLogout}
-            style={{ background: '#ef4444', color: 'white', padding: '8px 14px', border: 'none', borderRadius: 8, cursor: 'pointer' }}
-          >
-            Logout
-          </button>
-        )}
+
       </div>
 
       <form onSubmit={handleSubmit}>

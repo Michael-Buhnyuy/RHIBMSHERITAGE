@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, User, MessageCircle } from 'lucide-react';
+import { Menu, X, MessageCircle } from 'lucide-react';
 
 interface NavLink {
   to: string;
@@ -30,15 +30,7 @@ export function Navbar() {
   const navigate = useNavigate();
   const { user, role, logout } = useAuth();
 
-  const handleAdminClick = () => {
-    if (role === 'admin') {
-      navigate('/admin');
-    } else if (user) {
-      navigate('/');
-    } else {
-      navigate('/login');
-    }
-  };
+
 
   const handleLogoutClick = async () => {
     await logout();
