@@ -22,7 +22,6 @@ export interface DocumentaryData {
 
 interface AdminProps {
   setData: React.Dispatch<React.SetStateAction<DocumentaryData>>;
-  onLogout?: () => void;
 }
 
 const categories: { key: keyof DocumentaryData; label: string }[] = [

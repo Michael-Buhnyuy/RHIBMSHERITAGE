@@ -24,3 +24,14 @@ export interface Program {
   icon?: string;
 }
 
+export interface AuthUser {
+  uid: string;
+  email: string;
+  displayName?: string;
+  photoURL?: string;
+  isAdmin: boolean;
+}
+
+export type UserRole = 'admin' | 'user';
+
+
