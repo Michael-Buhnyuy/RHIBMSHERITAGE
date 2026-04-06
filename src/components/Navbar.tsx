@@ -60,7 +60,7 @@ export function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center space-x-8">
-{(user ? (role === 'admin' ? adminNavLinks : userNavLinks) : []).map((link) => (
+{(user ? userNavLinks : []).map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
@@ -74,15 +74,6 @@ export function Navbar() {
               </Link>
             ))}
           </div>
-
-          {role === 'admin' && (
-            <Link
-              to="/admin"
-              className="px-3 py-2 text-sm font-bold bg-gradient-to-r from-red-500 to-red-600 text-white rounded-md shadow-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 ml-2"
-            >
-              Admin Dashboard
-            </Link>
-          )}
 
           <div className="flex items-center gap-4 relative">
             <button
