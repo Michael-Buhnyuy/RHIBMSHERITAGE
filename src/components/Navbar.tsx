@@ -44,11 +44,6 @@ export function Navbar() {
     { to: '/documentary', label: 'Documentary' },
   ];
 
-  const adminNavLinks: NavLink[] = [
-    ...userNavLinks,
-    { to: '/admin', label: 'Admin' },
-  ];
-
   return (
     <nav className="bg-white/80 backdrop-blur-md shadow-lg border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -73,6 +68,14 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {role === 'admin' && (
+              <Link
+                to="/admin"
+                className="px-3 py-2 text-sm font-bold bg-gradient-to-r from-red-500 to-red-600 text-white rounded-md shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                Admin Dashboard
+              </Link>
+            )}
           </div>
 
           <div className="flex items-center gap-4 relative">
