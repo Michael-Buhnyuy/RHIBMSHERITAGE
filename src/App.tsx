@@ -10,10 +10,12 @@ import Admin, { DocumentaryData } from './pages/Admin';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Documentary from './pages/Documentary';
+import Apply from './pages/Apply';
 import { UserProtectedRoute } from './components/UserProtectedRoute';
 import { AdminProtectedRoute } from './components/AdminProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import './index.css';
+
 
 function AppContent() {
   const [data, setData] = useState<DocumentaryData>({
@@ -60,6 +62,12 @@ function AppContent() {
               <Contact />
             </UserProtectedRoute>
           } />
+          <Route path="/apply" element={
+            <UserProtectedRoute>
+              <Apply />
+            </UserProtectedRoute>
+          } />
+
           <Route path="/admin/*" element={
             <AdminProtectedRoute>
               <Admin setData={setData} />

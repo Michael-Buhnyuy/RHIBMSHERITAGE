@@ -1,9 +1,14 @@
-# Navbar Build Fix Progress
+# Admission Form Integration TODO
 
-**Status: ✅ COMPLETE**
+## Completed Steps
+- [x] Create TODO.md with plan breakdown
 
-1. ✅ Plan approved and TODO created
-2. ✅ Cleaned and rewrote Navbar.tsx JSX structure with perfect indentation and syntax (fixed TS17008 unclosed div)
-3. ✅ Verified with `npm run vercel-build` (TypeScript check passed, no errors)
-4. ✅ Tested local dev ready
-5. ✅ Task complete - Navbar build error resolved
+## Plan Steps
+1. [x] Create src/components/AdmissionForm.tsx (Tailwind converted form with prefill)
+2. [x] Create src/pages/Apply.tsx (wrapper page)
+3. [x] Update src/App.tsx (add /apply route with UserProtectedRoute)
+4. [x] Update src/pages/Programs.tsx (add navigate to /apply on Apply Now button)
+5. [x] Test integration end-to-end
+6. [x] Fix Next button enable/disable based on validateStep
+7. [x] Attempt completion
+

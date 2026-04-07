@@ -34,7 +34,7 @@ const ProgramCard: React.FC<{ program: Program; onClick: () => void }> = ({ prog
   </div>
 );
 
-const ProgramDetail: React.FC<{ program: Program; onClose: () => void }> = ({ program, onClose }) => (
+const ProgramDetail: React.FC<{ program: Program; onClose: () => void; navigate: (path: string, options?: any) => void }> = ({ program, onClose, navigate }) => (
   <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-6">
     <div className="bg-white/95 backdrop-blur-xl rounded-3xl max-w-5xl w-full max-h-[95vh] overflow-y-auto shadow-2xl border border-gray-200">
       <div className="sticky top-0 bg-white/100 backdrop-blur p-8 border-b rounded-t-3xl">
@@ -116,8 +116,12 @@ const ProgramDetail: React.FC<{ program: Program; onClose: () => void }> = ({ pr
         </div>
         
         <div className="text-center">
-          <button className="px-16 py-8 bg-gradient-to-r from-rhibms-red-500 to-rhibms-sky-500 text-white text-2xl font-bold rounded-3xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 w-full max-w-2xl mx-auto">
-            Apply Now
+          <button 
+            type="button"
+            onClick={() => navigate('/apply', { state: { school: program.title } })}
+            className="px-16 py-8 bg-gradient-to-r from-rhibms-red-500 to-rhibms-sky-500 hover:from-emerald-500 hover:to-emerald-600 text-white text-2xl font-bold rounded-3xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 w-full max-w-2xl mx-auto"
+          >
+            Apply Now →
           </button>
         </div>
       </div>
@@ -125,13 +129,17 @@ const ProgramDetail: React.FC<{ program: Program; onClose: () => void }> = ({ pr
   </div>
 );
 
+import { useNavigate } from 'react-router-dom';
+
 export default function Programs() {
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+  const navigate = useNavigate();
 
   return (
+
     <>
-      {selectedProgram && (
-        <ProgramDetail program={selectedProgram} onClose={() => setSelectedProgram(null)} />
+{selectedProgram && (
+        <ProgramDetail program={selectedProgram} onClose={() => setSelectedProgram(null)} navigate={navigate} />
       )}
       
       {/* Hero */}
