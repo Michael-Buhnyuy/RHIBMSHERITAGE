@@ -10,7 +10,7 @@ export default function Login() {
   const [adminPassword, setAdminPassword] = useState('');
   const [adminError, setAdminError] = useState('');
   const [adminIsProcessing, setAdminIsProcessing] = useState(false);
-  const { signInWithGoogle, loginAsAdmin, loading } = useAuth();
+  const { signInWithGoogle, signInWithPassword, loading } = useAuth();
   const navigate = useNavigate();
 
   const handleGoogleLogin = async () => {
@@ -35,10 +35,10 @@ export default function Login() {
     setAdminError('');
     setAdminIsProcessing(true);
     try {
-      await loginAsAdmin(adminEmail, adminPassword);
-      navigate('/admin');
+      await signInWithPassword(adminEmail, adminPassword);
+      navigate('/');
     } catch (err: any) {
-      setAdminError(err.message || 'Invalid admin credentials');
+      setAdminError(err.message || 'Invalid credentials');
       console.error(err);
     } finally {
       setAdminIsProcessing(false);

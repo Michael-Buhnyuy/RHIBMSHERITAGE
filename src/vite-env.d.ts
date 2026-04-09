@@ -1,15 +1,18 @@
 /// <reference types="vite/client" />
 
-declare module '*.jpg';
-declare module '*.jpeg';
-declare module '*.png';
-declare module '*.svg';
-declare module '*.gif';
-
-declare interface ImportMetaEnv {
-  readonly VITE_API_URL?: string;
+interface ImportMetaEnv {
+  readonly VITE_SUPABASE_URL: string
+  readonly VITE_SUPABASE_ANON_KEY: string
 }
 
-declare interface ImportMeta {
-  readonly env: ImportMetaEnv;
+/// <reference types="@supabase/supabase-js" />
+
+declare module 'supabaseClient.js' {
+  const supabase: any;
+  export default supabase;
+}
+
+declare module '../supabaseClient.js' {
+  const supabase: any;
+  export = supabase;
 }

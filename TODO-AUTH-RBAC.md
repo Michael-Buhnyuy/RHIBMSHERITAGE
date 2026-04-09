@@ -2,7 +2,7 @@
 
 ## Steps (0/9 complete)
 
-### ✅ 1. Update src/firebase.ts with real config & GoogleAuthProvider
+### ✅ 1. [Superseded] Firebase → Supabase client & Google OAuth
 ### ✅ 2. Create src/context/AuthContext.tsx (user/role state, signIn/out)
 ### ✅ 3. Update src/types/index.ts with AuthUser, UserRole types
 ### ✅ 4. Refactor src/components/ProtectedRoute.tsx → UserProtectedRoute.tsx

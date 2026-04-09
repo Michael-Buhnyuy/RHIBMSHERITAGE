@@ -24,13 +24,14 @@ export interface Program {
   icon?: string;
 }
 
-export interface AuthUser {
-  uid: string;
-  email: string;
-  displayName?: string;
+import type { User as SupabaseUser } from '@supabase/supabase-js';
+
+export interface AugmentedUser extends Omit<SupabaseUser, 'user_metadata'> {
   photoURL?: string;
-  isAdmin: boolean;
+  displayName?: string;
 }
+
+export type User = AugmentedUser | null;
 
 export type UserRole = 'admin' | 'user';
 
