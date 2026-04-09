@@ -4,7 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-theme: {
+  theme: {
     extend: {
       colors: {
         'rhibms-red': {
@@ -16,13 +16,13 @@ theme: {
         },
         'rhibms-sky': {
           50: '#f0f9ff',
-          400: '#0ea5e9',
-          500: '#0284c7',
-          600: '#0891b2',
+          400: '#38bdf8',
+          500: '#0ea5e9',
+          600: '#0284c7',
           900: '#0c4a6e',
         },
-      }
+      },
     },
   },
   plugins: [],
-}
+};
