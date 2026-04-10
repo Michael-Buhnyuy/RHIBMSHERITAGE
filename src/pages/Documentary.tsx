@@ -42,15 +42,18 @@ const normalize = (name: string) =>
 
 /* ================= GROUPING FUNCTION ================= */
 
-const groupImages = (modules: Record<string, string>) => {
+const groupImages = (modules: Record<string, unknown>) => {
   const grouped: Record<string, string[]> = {};
 
   Object.entries(modules).forEach(([path, src]) => {
-    let folder = path.split('/').slice(-2)[0];
-    folder = normalize(folder);
-
-    if (!grouped[folder]) grouped[folder] = [];
-    grouped[folder].push(src as string);
+    // Extract folder name from deep path: .../assets/images/[category]/[event-name]/[filename].jpg
+    const parts = path.split('/');
+    // const category = parts[parts.length - 3] || 'unknown'; // parent folder (unused)
+    const folder = parts[parts.length - 2] || normalize(path.split('/').slice(-2)[0]);
+    const normalizedFolder = normalize(folder);
+    
+    if (!grouped[normalizedFolder]) grouped[normalizedFolder] = [];
+    grouped[normalizedFolder].push(src as string);
   });
 
   return Object.entries(grouped).map(([folder, images]) => ({
@@ -66,23 +69,23 @@ const groupImages = (modules: Record<string, string>) => {
 /* ================= STATIC GLOBS ================= */
 
 const intlModules = import.meta.glob(
-  '/src/assets/images/Intenational_Tour/*/*.{jpg,jpeg,png}',
-  { eager: true, as: 'url' }
+  '../assets/images/Intenational_Tour/**/*.{jpg,jpeg,png,webp,avif}',
+  { eager: true, query: '?url', import: 'default' }
 );
 
 const natModules = import.meta.glob(
-  '/src/assets/images/national_Tour/*/*.{jpg,jpeg,png}',
-  { eager: true, as: 'url' }
+  '../assets/images/national_Tour/**/*.{jpg,jpeg,png,webp,avif}',
+  { eager: true, query: '?url', import: 'default' }
 );
 
 const eventModules = import.meta.glob(
-  '/src/assets/images/events/*/*.{jpg,jpeg,png}',
-  { eager: true, as: 'url' }
+  '../assets/images/events/**/*.{jpg,jpeg,png,webp,avif}',
+  { eager: true, query: '?url', import: 'default' }
 );
 
 const awardModules = import.meta.glob(
-  '/src/assets/images/awards/*/*.{jpg,jpeg,png}',
-  { eager: true, as: 'url' }
+  '../assets/images/awards/**/*.{jpg,jpeg,png,webp,avif}',
+  { eager: true, query: '?url', import: 'default' }
 );
 
 /* ================= DATA ================= */

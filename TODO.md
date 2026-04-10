@@ -1,5 +1,14 @@
-# TODO Steps for Fixing Vite Import Error
+# Programs Images Fix - Implementation Plan (BLACKBOXAI)
 
-## Plan Breakdown
-1. [x] Edit RHIBMSHERITAGE/src/context/AuthContext.tsx: Fix import path for supabaseClient from '../lib/supabaseClient' → '../supabaseClient'\n2. [x] Test: cd RHIBMSHERITAGE && npm run dev (verify no import error)\n3. [ ] Verify auth functionality (login/logout in browser)\n4. [ ] [Done] Mark complete\n\nCurrent step: 2/4
+**Status:** Path fix complete, testing dev server
 
+## Steps:
+- [x] 1. Fix glob paths in src/utils/imageHelpers.ts ('./assets/' → '../assets/') ✓
+- [ ] 2. cd RHIBMSHERITAGE && npm run dev → Test /programs: 6 images load
+- [ ] 3. npm run build && npm run preview → Prod verification
+- [ ] 4. Update TODO-PROGRAMS-IMAGES.md / TODO-IMAGES.md ✓ complete
+- [ ] 5. attempt_completion
+
+**Goal:** Reuse About.tsx imageHelpers mapping in Programs.tsx (path fix enables it)
+
+**Verification:** programs.json imageIds match filenames; logic identical.

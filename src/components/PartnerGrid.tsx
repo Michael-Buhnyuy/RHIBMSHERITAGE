@@ -1,6 +1,6 @@
 import partnersData from '../data/partners.json';
 import { Partner } from '../types';
-import { partnerImages } from '../utils/imageHelpers';
+import { partnerImages, fallbackImages } from '../utils/imageHelpers';
 
 interface PartnerGridProps {
   className?: string;
@@ -10,7 +10,7 @@ export function PartnerGrid({ className = '' }: PartnerGridProps) {
   const national = partnersData.filter((p) => p.type === 'national') as Partner[];
   const international = partnersData.filter((p) => p.type === 'international') as Partner[];
 
-  const getPartnerImage = (partner: Partner) => partner.imageId ? partnerImages[partner.imageId] || '/fallback-partner.jpg' : '/fallback-partner.jpg';
+  const getPartnerImage = (partner: Partner) => partner.imageId ? partnerImages[partner.imageId] || fallbackImages.partner || '/fallback-partner.jpg' : fallbackImages.partner || '/fallback-partner.jpg';
 
   return (
     <div className={`py-20 ${className}`}>

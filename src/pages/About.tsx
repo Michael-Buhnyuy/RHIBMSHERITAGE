@@ -1,15 +1,13 @@
-import founderImage from '../assets/images/founda.jpg';
-
 // Navbar and Footer now in App.tsx
 import { Timeline } from '../components/Timeline';
+import { founderImages } from '../utils/imageHelpers';
 import { GraduationCap, Globe, Heart } from 'lucide-react';
 
 const founder = {
   name: "Dr. Emmanuel N. Redemption",
   title: "Founder & Visionary",
   bio: "Dr. Redemption founded RHIBMS in 2009 with a vision to bridge biomedical sciences and management excellence in Cameroon. His leadership has grown the institute from 50 students to over 7,000, establishing international partnerships and community impact initiatives.",
-  image: founderImage
-
+  image: founderImages.founda
 };
 
 export default function About() {
