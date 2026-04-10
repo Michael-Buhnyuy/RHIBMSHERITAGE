@@ -1,11 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   ChevronLeft,
-  ChevronRight,
-  Globe,
-  MapPin,
-  GraduationCap,
-  Trophy
+  ChevronRight
 } from 'lucide-react';
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,88 +27,18 @@ export interface DocumentaryData {
   awards: GalleryItem[];
 }
 
-interface DocumentaryProps {
-  data?: DocumentaryData;
-}
+
 
 /* ================= HELPERS ================= */
 
-const normalize = (name: string) =>
-  name.replace(/[\s-]+/g, '_');
+import { useDocumentaries } from '../hooks/useDocumentaries';
 
-/* ================= GROUPING FUNCTION ================= */
-
-const groupImages = (modules: Record<string, unknown>) => {
-  const grouped: Record<string, string[]> = {};
-
-  Object.entries(modules).forEach(([path, src]) => {
-    // Extract folder name from deep path: .../assets/images/[category]/[event-name]/[filename].jpg
-    const parts = path.split('/');
-    // const category = parts[parts.length - 3] || 'unknown'; // parent folder (unused)
-    const folder = parts[parts.length - 2] || normalize(path.split('/').slice(-2)[0]);
-    const normalizedFolder = normalize(folder);
-    
-    if (!grouped[normalizedFolder]) grouped[normalizedFolder] = [];
-    grouped[normalizedFolder].push(src as string);
-  });
-
-  return Object.entries(grouped).map(([folder, images]) => ({
-    title: folder.replace(/_/g, ' '),
-    description: `Gallery for ${folder.replace(/_/g, ' ')}`,
-    images: images.map((src, i) => ({
-      src,
-      alt: `${folder} image ${i + 1}`
-    }))
-  }));
-};
-
-/* ================= STATIC GLOBS ================= */
-
-const intlModules = import.meta.glob(
-  '../assets/images/Intenational_Tour/**/*.{jpg,jpeg,png,webp,avif}',
-  { eager: true, query: '?url', import: 'default' }
-);
-
-const natModules = import.meta.glob(
-  '../assets/images/national_Tour/**/*.{jpg,jpeg,png,webp,avif}',
-  { eager: true, query: '?url', import: 'default' }
-);
-
-const eventModules = import.meta.glob(
-  '../assets/images/events/**/*.{jpg,jpeg,png,webp,avif}',
-  { eager: true, query: '?url', import: 'default' }
-);
-
-const awardModules = import.meta.glob(
-  '../assets/images/awards/**/*.{jpg,jpeg,png,webp,avif}',
-  { eager: true, query: '?url', import: 'default' }
-);
-
-/* ================= DATA ================= */
-
-const internationalTours = groupImages(intlModules).map(g => ({
-  ...g,
-  categoryIcon: <Globe className="w-10 h-10 text-blue-600" />
-}));
-
-const nationalTours = groupImages(natModules).map(g => ({
-  ...g,
-  categoryIcon: <MapPin className="w-10 h-10 text-emerald-600" />
-}));
-
-const events = groupImages(eventModules).map(g => ({
-  ...g,
-  categoryIcon: <GraduationCap className="w-10 h-10 text-purple-600" />
-}));
-
-const awards = groupImages(awardModules).map(g => ({
-  ...g,
-  categoryIcon: <Trophy className="w-10 h-10 text-orange-600" />
-}));
 
 /* ================= COMPONENT ================= */
 
-export default function Documentary({ data }: DocumentaryProps) {
+export default function Documentary() {
+  const { data, loading, error } = useDocumentaries();
+
   const [sliderIndex, setSliderIndex] = useState<Record<string, number>>({});
   const autoRef = useRef<Record<string, ReturnType<typeof setInterval>>>({});
 
@@ -123,12 +49,16 @@ export default function Documentary({ data }: DocumentaryProps) {
 
   /* 🔥 NEW STATES */
   const [zoomed, setZoomed] = useState(false);
-  const [direction, setDirection] = useState(0); // 🎬 animation direction
+  const [direction, setDirection] = useState(0);
 
-  const mergedInternationalTours = [...(data?.internationalTours ?? []), ...internationalTours];
-  const mergedNationalTours = [...(data?.nationalTours ?? []), ...nationalTours];
-  const mergedEvents = [...(data?.events ?? []), ...events];
-  const mergedAwards = [...(data?.awards ?? []), ...awards];
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="text-xl">Loading galleries...</div></div>;
+  if (error) return <div className="min-h-screen flex items-center justify-center text-red-600">Error: {error}</div>;
+
+  const mergedInternationalTours = data?.internationalTours ?? [];
+  const mergedNationalTours = data?.nationalTours ?? [];
+  const mergedEvents = data?.events ?? [];
+  const mergedAwards = data?.awards ?? [];
+
 
   const getIndex = (key: string) => sliderIndex[key] || 0;
 
