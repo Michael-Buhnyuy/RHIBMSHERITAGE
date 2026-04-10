@@ -9,7 +9,7 @@ import Partners from './pages/Partners';
 import Admin from './pages/Admin';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
-import Documentary from './pages/Documentary';
+import Documentary from './pages/Documentary';  
 import Apply from './pages/Apply';
 import { UserProtectedRoute } from './components/UserProtectedRoute';
 import { AdminProtectedRoute } from './components/AdminProtectedRoute';

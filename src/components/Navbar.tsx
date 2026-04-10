@@ -117,13 +117,19 @@ export function Navbar() {
               </div>
             )}
 
-            {user && (
+{user && (
               <div className="flex items-center gap-2 p-2 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition">
-                <img 
-                  src={user.photoURL || ''} 
-                  alt={user.displayName || 'User'} 
-                  className="w-6 h-6 rounded-full object-cover"
-                />
+                {user.photoURL ? (
+                  <img 
+                    src={user.photoURL} 
+                    alt={user.displayName || 'User'} 
+                    className="w-6 h-6 rounded-full object-cover bg-gray-200"
+                  />
+                ) : (
+                  <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center text-xs font-bold text-gray-600">
+                    {user.displayName?.[0]?.toUpperCase() || 'U'}
+                  </div>
+                )}
                 {role === 'admin' && (
                   <span className="text-xs font-bold px-2 py-1 bg-red-100 text-red-800 rounded-full">
                     Admin

@@ -37,6 +37,7 @@ export function PartnerGrid({ className = '' }: PartnerGridProps) {
                       src={getPartnerImage(partner)}
                       alt={partner.name}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      onError={(e) => (e.currentTarget.src = fallbackImages.partner)}
                     />
                   </div>
                   <p className="text-gray-600 leading-relaxed text-center px-6">{partner.description}</p>
@@ -59,6 +60,7 @@ export function PartnerGrid({ className = '' }: PartnerGridProps) {
                       src={getPartnerImage(partner)}
                       alt={partner.name}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      onError={(e) => (e.currentTarget.src = fallbackImages.partner)}
                     />
                   </div>
                   <p className="text-gray-700 leading-relaxed text-center px-6 font-medium">{partner.description}</p>

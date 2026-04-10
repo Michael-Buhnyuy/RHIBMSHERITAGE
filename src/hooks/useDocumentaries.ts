@@ -2,7 +2,17 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import type { GalleryItem, ImageItem, DocumentaryData } from '../types';
 
-interface SupabaseGallery {
+interface DBGallery {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  images: any;
+  created_at: string;
+  updated_at: string;
+};
+
+interface UIGallery {
   id: string;
   title: string;
   description: string;
@@ -56,17 +66,64 @@ export const useDocumentaries = () => {
         awards: [],
       };
 
-      galleries?.forEach((item: SupabaseGallery) => {
-        const galleryItem: Omit<GalleryItem, 'categoryIcon'> = {
-          title: item.title,
-          description: item.description,
-          images: item.images,
-        };
-        (grouped as any)[item.category].push({
-          ...galleryItem,
-          categoryIcon: createIcon(item.category),
-        });
+      console.log('Raw Supabase galleries:', galleries);
+
+      // Category mapping: DB -> UI
+      const categoryMap: Record<string, keyof DocumentaryData> = {
+        'international': 'internationalTours',
+        'national': 'nationalTours',
+        'events': 'events',
+        'awards': 'awards'
+      };
+
+      (galleries as DBGallery[])?.forEach((item) => {
+        const uiCategory = categoryMap[item.category];
+        if (!uiCategory) {
+          console.warn('Unknown category:', item.category);
+          return;
+        }
+
+        // Defensive images parsing
+        let parsedImages: ImageItem[] = [];
+        try {
+          if (item.images == null) {
+            parsedImages = [];
+          } else if (typeof item.images === 'string') {
+            parsedImages = JSON.parse(item.images);
+          } else if (Array.isArray(item.images)) {
+            parsedImages = item.images;
+          } else {
+            console.warn('Invalid images format:', item.images);
+            parsedImages = [];
+          }
+
+          // Validate/filter images
+          parsedImages = parsedImages.filter((img): img is ImageItem => 
+            img && typeof img.src === 'string' && img.src.startsWith('http') && 
+            (typeof img.alt === 'string' || typeof img.alt === 'undefined')
+          ).map(img => ({
+            src: img.src,
+            alt: img.alt || 'Gallery image'
+          }));
+
+          console.log(`Parsed ${parsedImages.length} images for ${item.title}`);
+
+          const galleryItem: Omit<GalleryItem, 'categoryIcon'> = {
+            title: item.title,
+            description: item.description || '',
+            images: parsedImages,
+          };
+
+          (grouped as any)[uiCategory].push({
+            ...galleryItem,
+            categoryIcon: createIcon(uiCategory as string),
+          });
+        } catch (parseError) {
+          console.error('Images parse error for', item.title, parseError);
+        }
       });
+
+      console.log('Final grouped data:', grouped);
 
       setData(grouped);
       setError(null);
@@ -78,7 +135,7 @@ export const useDocumentaries = () => {
     }
   }, []);
 
-  const create = async (gallery: Omit<SupabaseGallery, 'id' | 'created_at' | 'updated_at'>) => {
+  const create = async (gallery: Omit<UIGallery, 'id' | 'created_at' | 'updated_at'>) => {
     const { data, error } = await supabase
       .from('documentaries')
       .insert([gallery])
@@ -89,7 +146,7 @@ export const useDocumentaries = () => {
     return data;
   };
 
-  const update = async (id: string, updates: Partial<SupabaseGallery>) => {
+  const update = async (id: string, updates: Partial<UIGallery>) => {
     const { error } = await supabase
       .from('documentaries')
       .update({ ...updates, updated_at: new Date().toISOString() })

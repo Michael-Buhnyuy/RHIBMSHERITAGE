@@ -131,10 +131,23 @@ export default function Documentary() {
     <section className="space-y-16">
       <h2 className="text-4xl font-black text-center">{title}</h2>
 
-      {data.map((gallery, index) => {
-        const current = getIndex(gallery.title);
+      {data.length === 0 ? (
+        <div className="text-center py-20">
+          <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+            📸
+          </div>
+          <h3 className="text-2xl font-bold text-gray-600 mb-4">No galleries yet</h3>
+          <p className="text-xl text-gray-500 mb-8 max-w-md mx-auto">
+            Galleries will appear here once added via Admin panel.
+          </p>
+          <a href="/admin" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-full font-bold hover:shadow-xl transition-all inline-flex items-center gap-2">
+            Add First Gallery <span>→</span>
+          </a>
 
-        return (
+        </div>
+      ) : data.map((gallery, index) => {
+          const current = getIndex(gallery.title);
+          return (
           <div
             key={gallery.title}
             className={`group flex flex-col lg:flex-row gap-10 p-8 rounded-3xl 
@@ -142,6 +155,7 @@ export default function Documentary() {
               index % 2 ? 'lg:flex-row-reverse' : ''
             }`}
           >
+
 
             <div className="lg:w-2/5 space-y-4">
               <div className="flex items-center gap-3">
@@ -191,7 +205,7 @@ export default function Documentary() {
             </div>
           </div>
         );
-      })}
+      })} 
     </section>
   );
 
@@ -204,7 +218,7 @@ export default function Documentary() {
         DOCUMENTARY ARCHIVE
       </h1>
 
-      {renderSection('INTERNATIONAL TOURS', mergedInternationalTours)}
+{renderSection('INTERNATIONAL TOURS', mergedInternationalTours)}
       {renderSection('NATIONAL TOURS', mergedNationalTours)}
       {renderSection('EVENTS', mergedEvents)}
       {renderSection('AWARDS', mergedAwards)}
@@ -237,7 +251,6 @@ export default function Documentary() {
                 <motion.img
                   key={lightbox.index}
                   src={lightbox.images[lightbox.index].src}
-
                   initial={{
                     x: direction > 0 ? 100 : -100,
                     opacity: 0,
@@ -253,23 +266,21 @@ export default function Documentary() {
                     opacity: 0,
                     scale: 0.95
                   }}
-
                   transition={{
                     duration: 0.5,
                     ease: 'easeInOut'
                   }}
-
                   drag="x"
                   dragConstraints={{ left: 0, right: 0 }}
                   dragElastic={0.2}
-onDragEnd={(_e, info) => {
+                  onDragEnd={(_e, info) => {
                     if (info.offset.x > 100) prevLightbox();
                     if (info.offset.x < -100) nextLightbox();
                   }}
-
                   className="max-h-[85vh] object-contain cursor-pointer"
                 />
               </AnimatePresence>
+
             </div>
 
             {/* RIGHT */}
