@@ -69,7 +69,7 @@ export default function AdminPage({ data, setData }: AdminPageProps) {
     const filesArray = Array.from(selectedFiles); // allow multi
     setFiles(filesArray);
 
-    const previews = filesArray.map((file) => ({
+    const previews: ImageItem[] = filesArray.map((file) => ({
       src: URL.createObjectURL(file),
       alt: file.name,
     }));

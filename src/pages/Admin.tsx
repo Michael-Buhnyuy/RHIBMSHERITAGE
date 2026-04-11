@@ -65,7 +65,7 @@ export default function Admin({ setData }: AdminProps) {
     const fileArray = Array.from(selectedFiles);
     setFiles(fileArray);
 
-    const previews = fileArray.map((file) => ({
+    const previews: ImageItem[] = fileArray.map((file) => ({
       src: URL.createObjectURL(file),
       alt: file.name,
     }));
