@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Globe,
+  MapPin,
+  GraduationCap,
+  Trophy
 } from 'lucide-react';
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,18 +31,88 @@ export interface DocumentaryData {
   awards: GalleryItem[];
 }
 
-
+interface DocumentaryProps {
+  data?: DocumentaryData;
+}
 
 /* ================= HELPERS ================= */
 
-import { useDocumentaries } from '../hooks/useDocumentaries';
+const normalize = (name: string) =>
+  name.replace(/[\s-]+/g, '_');
 
+/* ================= GROUPING FUNCTION ================= */
+
+const groupImages = (modules: Record<string, unknown>) => {
+  const grouped: Record<string, string[]> = {};
+
+  Object.entries(modules).forEach(([path, src]) => {
+    // Extract folder name from deep path: .../assets/images/[category]/[event-name]/[filename].jpg
+    const parts = path.split('/');
+    // const category = parts[parts.length - 3] || 'unknown'; // parent folder (unused)
+    const folder = parts[parts.length - 2] || normalize(path.split('/').slice(-2)[0]);
+    const normalizedFolder = normalize(folder);
+    
+    if (!grouped[normalizedFolder]) grouped[normalizedFolder] = [];
+    grouped[normalizedFolder].push(src as string);
+  });
+
+  return Object.entries(grouped).map(([folder, images]) => ({
+    title: folder.replace(/_/g, ' '),
+    description: `Gallery for ${folder.replace(/_/g, ' ')}`,
+    images: images.map((src, i) => ({
+      src,
+      alt: `${folder} image ${i + 1}`
+    }))
+  }));
+};
+
+/* ================= STATIC GLOBS ================= */
+
+const intlModules = import.meta.glob(
+  '../assets/images/Intenational_Tour/**/*.{jpg,jpeg,png,webp,avif}',
+  { eager: true, query: '?url', import: 'default' }
+);
+
+const natModules = import.meta.glob(
+  '../assets/images/national_Tour/**/*.{jpg,jpeg,png,webp,avif}',
+  { eager: true, query: '?url', import: 'default' }
+);
+
+const eventModules = import.meta.glob(
+  '../assets/images/events/**/*.{jpg,jpeg,png,webp,avif}',
+  { eager: true, query: '?url', import: 'default' }
+);
+
+const awardModules = import.meta.glob(
+  '../assets/images/awards/**/*.{jpg,jpeg,png,webp,avif}',
+  { eager: true, query: '?url', import: 'default' }
+);
+
+/* ================= DATA ================= */
+
+const internationalTours = groupImages(intlModules).map(g => ({
+  ...g,
+  categoryIcon: <Globe className="w-10 h-10 text-blue-600" />
+}));
+
+const nationalTours = groupImages(natModules).map(g => ({
+  ...g,
+  categoryIcon: <MapPin className="w-10 h-10 text-emerald-600" />
+}));
+
+const events = groupImages(eventModules).map(g => ({
+  ...g,
+  categoryIcon: <GraduationCap className="w-10 h-10 text-purple-600" />
+}));
+
+const awards = groupImages(awardModules).map(g => ({
+  ...g,
+  categoryIcon: <Trophy className="w-10 h-10 text-orange-600" />
+}));
 
 /* ================= COMPONENT ================= */
 
-export default function Documentary() {
-  const { data, loading, error } = useDocumentaries();
-
+export default function Documentary({ data }: DocumentaryProps) {
   const [sliderIndex, setSliderIndex] = useState<Record<string, number>>({});
   const autoRef = useRef<Record<string, ReturnType<typeof setInterval>>>({});
 
@@ -49,16 +123,12 @@ export default function Documentary() {
 
   /* 🔥 NEW STATES */
   const [zoomed, setZoomed] = useState(false);
-  const [direction, setDirection] = useState(0);
+  const [direction, setDirection] = useState(0); // 🎬 animation direction
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="text-xl">Loading galleries...</div></div>;
-  if (error) return <div className="min-h-screen flex items-center justify-center text-red-600">Error: {error}</div>;
-
-  const mergedInternationalTours = data?.internationalTours ?? [];
-  const mergedNationalTours = data?.nationalTours ?? [];
-  const mergedEvents = data?.events ?? [];
-  const mergedAwards = data?.awards ?? [];
-
+  const mergedInternationalTours = [...(data?.internationalTours ?? []), ...internationalTours];
+  const mergedNationalTours = [...(data?.nationalTours ?? []), ...nationalTours];
+  const mergedEvents = [...(data?.events ?? []), ...events];
+  const mergedAwards = [...(data?.awards ?? []), ...awards];
 
   const getIndex = (key: string) => sliderIndex[key] || 0;
 
@@ -131,23 +201,10 @@ export default function Documentary() {
     <section className="space-y-16">
       <h2 className="text-4xl font-black text-center">{title}</h2>
 
-      {data.length === 0 ? (
-        <div className="text-center py-20">
-          <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-            📸
-          </div>
-          <h3 className="text-2xl font-bold text-gray-600 mb-4">No galleries yet</h3>
-          <p className="text-xl text-gray-500 mb-8 max-w-md mx-auto">
-            Galleries will appear here once added via Admin panel.
-          </p>
-          <a href="/admin" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-full font-bold hover:shadow-xl transition-all inline-flex items-center gap-2">
-            Add First Gallery <span>→</span>
-          </a>
+      {data.map((gallery, index) => {
+        const current = getIndex(gallery.title);
 
-        </div>
-      ) : data.map((gallery, index) => {
-          const current = getIndex(gallery.title);
-          return (
+        return (
           <div
             key={gallery.title}
             className={`group flex flex-col lg:flex-row gap-10 p-8 rounded-3xl 
@@ -155,7 +212,6 @@ export default function Documentary() {
               index % 2 ? 'lg:flex-row-reverse' : ''
             }`}
           >
-
 
             <div className="lg:w-2/5 space-y-4">
               <div className="flex items-center gap-3">
@@ -205,7 +261,7 @@ export default function Documentary() {
             </div>
           </div>
         );
-      })} 
+      })}
     </section>
   );
 
@@ -218,7 +274,7 @@ export default function Documentary() {
         DOCUMENTARY ARCHIVE
       </h1>
 
-{renderSection('INTERNATIONAL TOURS', mergedInternationalTours)}
+      {renderSection('INTERNATIONAL TOURS', mergedInternationalTours)}
       {renderSection('NATIONAL TOURS', mergedNationalTours)}
       {renderSection('EVENTS', mergedEvents)}
       {renderSection('AWARDS', mergedAwards)}
@@ -251,6 +307,7 @@ export default function Documentary() {
                 <motion.img
                   key={lightbox.index}
                   src={lightbox.images[lightbox.index].src}
+
                   initial={{
                     x: direction > 0 ? 100 : -100,
                     opacity: 0,
@@ -266,21 +323,23 @@ export default function Documentary() {
                     opacity: 0,
                     scale: 0.95
                   }}
+
                   transition={{
                     duration: 0.5,
                     ease: 'easeInOut'
                   }}
+
                   drag="x"
                   dragConstraints={{ left: 0, right: 0 }}
                   dragElastic={0.2}
-                  onDragEnd={(_e, info) => {
+onDragEnd={(_e, info) => {
                     if (info.offset.x > 100) prevLightbox();
                     if (info.offset.x < -100) nextLightbox();
                   }}
+
                   className="max-h-[85vh] object-contain cursor-pointer"
                 />
               </AnimatePresence>
-
             </div>
 
             {/* RIGHT */}

@@ -1,22 +1,30 @@
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import Home from './pages/Home';
 import About from './pages/About';
 import Programs from './pages/Programs';
 import Partners from './pages/Partners';
-import Admin from './pages/Admin';
+import Admin, { DocumentaryData } from './pages/Admin';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
-import Documentary from './pages/Documentary';  
+import Documentary from './pages/Documentary';
 import Apply from './pages/Apply';
 import { UserProtectedRoute } from './components/UserProtectedRoute';
 import { AdminProtectedRoute } from './components/AdminProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import './index.css';
 
+
 function AppContent() {
+  const [data, setData] = useState<DocumentaryData>({
+    internationalTours: [],
+    nationalTours: [],
+    events: [],
+    awards: [],
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-rhibms-red-50 via-white to-rhibms-sky-50">
       <Navbar />
@@ -41,7 +49,7 @@ function AppContent() {
           } />
           <Route path="/documentary" element={
             <UserProtectedRoute>
-              <Documentary />
+              <Documentary data={data} />
             </UserProtectedRoute>
           } />
           <Route path="/questions" element={
@@ -62,7 +70,7 @@ function AppContent() {
 
           <Route path="/admin/*" element={
             <AdminProtectedRoute>
-              <Admin />
+              <Admin setData={setData} />
             </AdminProtectedRoute>
           } />
           <Route path="*" element={<Navigate to="/" replace />} />
