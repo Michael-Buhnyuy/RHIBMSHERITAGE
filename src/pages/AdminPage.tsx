@@ -1,6 +1,5 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { supabase } from '../supabaseClient';
-import { v4 as uuidv4 } from 'uuid';
 import { Globe, MapPin, GraduationCap, Trophy } from 'lucide-react';
 
 export interface ImageItem {
@@ -102,8 +101,9 @@ export default function AdminPage({ data, setData }: AdminPageProps) {
       const uploadPromises = files.map(async (file) => {
         const timestamp = Date.now();
         const fileExt = file.name.split('.').pop() || 'jpg';
-        const fileName = `${uuidv4()}-${timestamp}.${fileExt}`;
-        const storagePath = `${category}/${fileName}`;
+        const randomId = Math.random().toString(36).substr(2, 9);
+        const fileName = `${category.replace(/\//g, '-')}-${timestamp}-${randomId}.${fileExt}`;
+        const storagePath = `posts/${category}/${fileName}`;
 
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('post-images')
