@@ -225,7 +225,7 @@ export default function AdminPage({ data, setData }: AdminPageProps) {
           type="submit"
           style={{ width: '100%', padding: 12, border: 'none', borderRadius: 6, backgroundColor: '#2563eb', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
         >
-          Create Post
+          PUBLISH
         </button>
       </form>
 
