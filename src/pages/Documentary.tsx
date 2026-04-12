@@ -7,6 +7,24 @@ import {
   GraduationCap,
   Trophy
 } from 'lucide-react';
+import { supabase } from '../supabaseClient';
+
+type CategoryKey = 'internationalTours' | 'nationalTours' | 'events' | 'awards';
+
+const getIconForCategory = (category: CategoryKey) => {
+  switch (category) {
+    case 'internationalTours':
+      return <Globe className="w-10 h-10 text-blue-600" />;
+    case 'nationalTours':
+      return <MapPin className="w-10 h-10 text-emerald-600" />;
+    case 'events':
+      return <GraduationCap className="w-10 h-10 text-purple-600" />;
+    case 'awards':
+      return <Trophy className="w-10 h-10 text-orange-600" />;
+    default:
+      return null;
+  }
+};
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -37,17 +55,17 @@ interface DocumentaryProps {
 
 /* ================= SAFE GUARDS ================= */
 
-const isSafeGallery = (gallery?: GalleryItem): gallery is GalleryItem => {
-  if (!gallery) return false;
+const isSafeGallery = (gallery: any): gallery is GalleryItem => {
+  if (!gallery || typeof gallery !== 'object') return false;
   const images = gallery.images;
   if (!Array.isArray(images) || images.length === 0) {
-    console.warn(`❌ Invalid gallery '${gallery.title}': images is ${typeof images} length ${images?.length}`);
+    console.warn(`❌ Invalid gallery '${gallery.title || 'unknown'}': images is ${typeof images} length ${images?.length || 0}`);
     return false;
   }
   // Check each image has src
   for (const img of images) {
     if (!img?.src || typeof img.src !== 'string') {
-      console.warn(`❌ Gallery '${gallery.title}' has invalid img:`, img);
+      console.warn(`❌ Gallery '${gallery.title || 'unknown'}' has invalid img:`, img);
       return false;
     }
   }
@@ -77,14 +95,15 @@ const groupImages = (modules: Record<string, unknown>) => {
     grouped[normalizedFolder].push(src as string);
   });
 
-  return Object.entries(grouped).map(([folder, images]) => ({
+  const partialGalleries = Object.entries(grouped).map(([folder, images]) => ({
     title: folder.replace(/_/g, ' '),
     description: `Gallery for ${folder.replace(/_/g, ' ')}`,
     images: images.map((src, i) => ({
       src: src as string,
       alt: `${folder} image ${i + 1}`
     })) as ImageItem[]
-  })).filter((g): g is GalleryItem => Boolean(g && g.categoryIcon));
+  }));
+  return partialGalleries.filter(isSafeGallery as any);
 };
 
 /* ================= STATIC GLOBS ================= */
@@ -144,6 +163,67 @@ export default function Documentary({ data }: DocumentaryProps) {
   const [zoomed, setZoomed] = useState(false);
   const [direction, setDirection] = useState(0);
 
+  const [fetchedPosts, setFetchedPosts] = useState<DocumentaryData>({
+    internationalTours: [],
+    nationalTours: [],
+    events: [],
+    awards: [],
+  });
+
+  // Fetch posts from Supabase
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const { data: posts, error } = await supabase
+          .from('posts')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Failed to fetch posts:', error);
+          return;
+        }
+
+        if (!posts || posts.length === 0) {
+          console.log('No posts found in Supabase');
+          return;
+        }
+
+        // Group by category and transform
+        const grouped: DocumentaryData = {
+          internationalTours: [],
+          nationalTours: [],
+          events: [],
+          awards: [],
+        };
+
+        posts.forEach((post: any) => {
+          const category = post.category as CategoryKey;
+          if (!grouped[category as keyof DocumentaryData]) return;
+
+          const galleryItem: GalleryItem = {
+            title: post.title,
+            description: post.description,
+            images: (post.images as string[]).map((url: string, index: number) => ({
+              src: url,
+              alt: `${post.title} image ${index + 1}`,
+            })),
+            categoryIcon: getIconForCategory(category),
+          };
+
+          grouped[category as keyof DocumentaryData]!.push(galleryItem);
+        });
+
+        setFetchedPosts(grouped);
+        console.log('Fetched and grouped posts:', grouped);
+      } catch (err) {
+        console.error('Fetch error:', err);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
   // 🛡️ Defensive merge with filtering
 const safeData = {
   internationalTours: ((data?.internationalTours || []) as GalleryItem[]).filter(isSafeGallery),
@@ -152,10 +232,26 @@ const safeData = {
   awards: ((data?.awards || []) as GalleryItem[]).filter(isSafeGallery),
 };
 
-  const mergedInternationalTours = [...safeData.internationalTours, ...internationalTours];
-  const mergedNationalTours = [...safeData.nationalTours, ...nationalTours].filter(isSafeGallery);
-  const mergedEvents = [...safeData.events, ...events];
-  const mergedAwards = [...safeData.awards, ...awards];
+  const mergedInternationalTours = [
+    ...(fetchedPosts.internationalTours || []),
+    ...safeData.internationalTours,
+    ...internationalTours
+  ].filter(isSafeGallery);
+  const mergedNationalTours = [
+    ...(fetchedPosts.nationalTours || []),
+    ...safeData.nationalTours,
+    ...nationalTours
+  ].filter(isSafeGallery);
+  const mergedEvents = [
+    ...(fetchedPosts.events || []),
+    ...safeData.events,
+    ...events
+  ].filter(isSafeGallery);
+  const mergedAwards = [
+    ...(fetchedPosts.awards || []),
+    ...safeData.awards,
+    ...awards
+  ].filter(isSafeGallery);
 
   // Debug log
   useEffect(() => {
@@ -312,7 +408,10 @@ const getIndex = (key: string): number => {
                         galleryTitle: gallery.title 
                       })}
                       className="w-full h-full object-cover flex-shrink-0 cursor-pointer"
-                      onError={(e) => console.warn(`❌ Image load failed: ${img.src}`)}
+onError={(e) => {
+  console.warn(`❌ Image load failed: ${img.src}`);
+  e.currentTarget.style.display = 'none';
+}}
                     />
                   ))}
                 </div>

@@ -1,4 +1,6 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
+import { supabase } from '../supabaseClient';
+import { v4 as uuidv4 } from 'uuid';
 import { Globe, MapPin, GraduationCap, Trophy } from 'lucide-react';
 
 export interface ImageItem {
@@ -85,7 +87,7 @@ export default function AdminPage({ data, setData }: AdminPageProps) {
     setError('');
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!title.trim() || !description.trim() || files.length === 0) {
@@ -93,19 +95,72 @@ export default function AdminPage({ data, setData }: AdminPageProps) {
       return;
     }
 
-    const newPost: DocumentaryCard = {
-      title: title.trim(),
-      description: description.trim(),
-      images: previewImages,
-      categoryIcon: getIconForCategory(category),
-    };
+    try {
+      setError('');
 
-    setData((prev) => ({
-      ...prev,
-      [category]: [newPost, ...prev[category]],
-    }));
+      // Upload images to Supabase storage
+      const uploadPromises = files.map(async (file) => {
+        const timestamp = Date.now();
+        const fileExt = file.name.split('.').pop() || 'jpg';
+        const fileName = `${uuidv4()}-${timestamp}.${fileExt}`;
+        const storagePath = `${category}/${fileName}`;
 
-    resetForm();
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('post-images')
+          .upload(storagePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError || !uploadData?.path) {
+          throw new Error(`Upload failed for ${file.name}: ${uploadError?.message || 'Unknown error'}`);
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('post-images')
+          .getPublicUrl(uploadData.path);
+
+        return publicUrl;
+      });
+
+      const imageUrls: string[] = await Promise.all(uploadPromises);
+
+      // Insert post to Supabase
+      const { error: insertError } = await supabase
+        .from('posts')
+        .insert({
+          category,
+          title: title.trim(),
+          description: description.trim(),
+          images: imageUrls
+        });
+
+      if (insertError) {
+        throw new Error(`Insert failed: ${insertError.message}`);
+      }
+
+      // Create local post for immediate UI update (using uploaded URLs)
+      const newPost: DocumentaryCard = {
+        title: title.trim(),
+        description: description.trim(),
+        images: imageUrls.map((url, index) => ({
+          src: url,
+          alt: `${title.trim()} image ${index + 1}`
+        })),
+        categoryIcon: getIconForCategory(category),
+      };
+
+      setData((prev) => ({
+        ...prev,
+        [category]: [newPost, ...prev[category]],
+      }));
+
+      resetForm();
+      // Optional: alert('Post created and saved to Supabase!');
+    } catch (err: any) {
+      console.error('Admin submit error:', err);
+      setError(err.message || 'Failed to create post. Please try again.');
+    }
   };
 
   return (
