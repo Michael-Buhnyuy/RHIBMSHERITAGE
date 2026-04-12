@@ -1,18 +1,9 @@
-import { useState, ChangeEvent, FormEvent } from 'react';
-import { supabase } from '../supabaseClient';
+import { useState, ChangeEvent, FormEvent } from 'react'
 import { Globe, MapPin, GraduationCap, Trophy } from 'lucide-react';
 
-export interface ImageItem {
-  src: string;
-  alt: string;
-}
+import { supabase } from '../supabaseClient';
+import { type ImageItem, type DocumentaryCard, type CategoryKey } from '../hooks/useUserPosts';
 
-export interface DocumentaryCard {
-  title: string;
-  description: string;
-  images: ImageItem[];
-  categoryIcon: React.ReactNode;
-}
 
 export interface DocumentaryData {
   internationalTours: DocumentaryCard[];
@@ -21,10 +12,8 @@ export interface DocumentaryData {
   awards: DocumentaryCard[];
 }
 
-interface AdminPageProps {
-  data: DocumentaryData;
-  setData: React.Dispatch<React.SetStateAction<DocumentaryData>>;
-}
+// No props needed - uses Supabase hook
+
 
 const categoryOptions = [
   { value: 'internationalTours', label: 'INTERNATIONAL TOURS' },
@@ -33,7 +22,8 @@ const categoryOptions = [
   { value: 'awards', label: 'AWARDS' },
 ] as const;
 
-type CategoryKey = keyof DocumentaryData;
+
+
 
 const getIconForCategory = (category: CategoryKey) => {
   switch (category) {
@@ -50,7 +40,13 @@ const getIconForCategory = (category: CategoryKey) => {
   }
 };
 
+interface AdminPageProps {
+  data: DocumentaryData;
+  setData: React.Dispatch<React.SetStateAction<DocumentaryData>>;
+}
+
 export default function AdminPage({ data, setData }: AdminPageProps) {
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<CategoryKey>('internationalTours');
@@ -150,10 +146,11 @@ export default function AdminPage({ data, setData }: AdminPageProps) {
         categoryIcon: getIconForCategory(category),
       };
 
-      setData((prev) => ({
+      setData((prev: DocumentaryData) => ({
         ...prev,
         [category]: [newPost, ...prev[category]],
       }));
+
 
       resetForm();
       // Optional: alert('Post created and saved to Supabase!');
