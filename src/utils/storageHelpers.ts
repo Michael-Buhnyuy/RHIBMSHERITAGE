@@ -4,12 +4,14 @@ import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Generic file upload to app-files bucket with user-specific path
- * Structure: ${uid}/${feature}/${itemId}/${uuid}.${ext}
+ * For posts: posts/{uuid}-{filename}
+ * Generic: ${uid}/${feature}/${itemId}/${uuid}.${ext}
  */
 export const uploadFile = async (
   file: File, 
-  featureName: string, 
-  itemId: string = uuidv4()
+  featureName: string = 'generic',
+  itemId: string = uuidv4(),
+  usePostsFormat: boolean = false
 ): Promise<string | null> => {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   
@@ -19,7 +21,15 @@ export const uploadFile = async (
   }
 
   const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
-  const filePath = `${user.id}/${featureName}/${itemId}/${uuidv4()}.${fileExtension}`;
+  
+  let filePath: string;
+  if (usePostsFormat) {
+    // posts/{uuid}-{filename}
+    filePath = `posts/${uuidv4()}-${file.name}`;
+  } else {
+    // Legacy generic format
+    filePath = `${user.id}/${featureName}/${itemId}/${uuidv4()}.${fileExtension}`;
+  }
 
   const { error } = await supabase.storage
     .from('app-files')
@@ -38,6 +48,32 @@ export const uploadFile = async (
 };
 
 /**
+ * Get permanent PUBLIC URL (bucket must be public)
+ */
+export const getPublicUrl = (filePath: string): string => {
+  const { data } = supabase.storage
+    .from('app-files')
+    .getPublicUrl(filePath);
+  return data.publicUrl;
+};
+
+/**
+ * Get signed URL (3600s = 1hr) - for private/non-public fallback
+ */
+export const getSignedUrl = async (filePath: string): Promise<string | null> => {
+  const { data, error } = await supabase.storage
+    .from('app-files')
+    .createSignedUrl(filePath, 60 * 60);
+
+  if (error) {
+    console.error('Signed URL error:', error.message);
+    return null;
+  }
+
+  return data.signedUrl;
+};
+
+/**
  * Delete file from storage
  */
 export const deleteFile = async (filePath: string): Promise<boolean> => {
@@ -52,22 +88,6 @@ export const deleteFile = async (filePath: string): Promise<boolean> => {
 
   console.log(`✅ Deleted: ${filePath}`);
   return true;
-};
-
-/**
- * Get signed URL (3600s = 1hr)
- */
-export const getSignedUrl = async (filePath: string): Promise<string | null> => {
-  const { data, error } = await supabase.storage
-    .from('app-files')
-    .createSignedUrl(filePath, 60 * 60);
-
-  if (error) {
-    console.error('Signed URL error:', error.message);
-    return null;
-  }
-
-  return data.signedUrl;
 };
 
 /**

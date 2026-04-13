@@ -37,14 +37,18 @@ export type UserRole = 'admin' | 'user';
 
 export type DocumentaryCategory = 'internationalTours' | 'nationalTours' | 'events' | 'awards';
 
+export interface ImageItem {
+  src: string;
+  alt: string;
+}
+
 export interface Post {
   id: string;
   title: string;
   description: string;
   category: DocumentaryCategory;
-  images: string[];
+  images: ImageItem[] | string[];
   user_id: string;
   created_at: string;
   updated_at: string;
 }
-

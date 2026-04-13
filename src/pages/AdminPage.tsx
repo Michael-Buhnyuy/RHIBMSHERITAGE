@@ -1,6 +1,7 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { supabase } from '../supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
+import { uploadFile, getPublicUrl } from '../utils/storageHelpers';
 
 export interface ImageItem {
   src: string;
@@ -10,13 +11,13 @@ export interface ImageItem {
 export interface DocumentaryCard {
   title: string;
   description: string;
-  images: ImageItem[];
+  images: ImageItem[]; 
   categoryIcon: React.ReactNode;
 }
 
 export interface DocumentaryData {
   internationalTours: DocumentaryCard[];
-  nationalTours: DocumentaryCard[];
+  nationalTours: DocumentaryCard[]; 
   events: DocumentaryCard[];
   awards: DocumentaryCard[];
 }
@@ -34,32 +35,13 @@ const categoryOptions = [
 
 type CategoryKey = keyof DocumentaryData;
 
-const uploadFileToSupabase = async (file: File, featureName: string, itemId: string): Promise<string | null> => {
-  const user = (await supabase.auth.getUser()).data.user;
-  if (!user) {
-    console.error('User not authenticated');
-    return null;
-  }
-
-  const fileExtension = file.name.split('.').pop();
-  const filePath = `${user.id}/${featureName}/${itemId}/${uuidv4()}.${fileExtension}`;
-
-  const { error } = await supabase.storage.from('app-files').upload(filePath, file);
-
-  if (error) {
-    console.error('Error uploading file:', error.message);
-    return null;
-  }
-
-  return filePath;
-};
-
 export default function AdminPage({ data }: AdminPageProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<CategoryKey>('internationalTours');
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   const [previewImages, setPreviewImages] = useState<ImageItem[]>([]);
 
@@ -71,7 +53,7 @@ export default function AdminPage({ data }: AdminPageProps) {
       return;
     }
 
-    const filesArray = Array.from(selectedFiles); // allow multi
+    const filesArray = Array.from(selectedFiles);
     setFiles(filesArray);
 
     const previews: ImageItem[] = filesArray.map((file) => ({
@@ -98,36 +80,62 @@ export default function AdminPage({ data }: AdminPageProps) {
       return;
     }
 
-    const user = (await supabase.auth.getUser()).data.user;
-    if (!user) {
-      setError('User not authenticated');
-      return;
-    }
+    setUploading(true);
+    setError('');
 
-    const uploadedFilePaths: string[] = [];
-
-    for (const file of files) {
-      const filePath = await uploadFileToSupabase(file, 'posts', uuidv4());
-      if (filePath) {
-        uploadedFilePaths.push(filePath);
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) {
+        throw new Error('User not authenticated');
       }
+
+      // Upload files using new posts format
+      console.log('📤 Uploading images...');
+      const uploadedPaths: string[] = [];
+      const originalFiles = files; // Keep for alt names
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const path = await uploadFile(file, 'posts', uuidv4(), true); // true = posts format
+        if (path) {
+          uploadedPaths.push(path);
+        } else {
+          console.warn(`⚠️ Failed to upload ${file.name}`);
+        }
+      }
+
+      if (uploadedPaths.length === 0) {
+        throw new Error('No images uploaded successfully');
+      }
+
+      // Generate public URLs + ImageItem[]
+      console.log('🔗 Generating public URLs...');
+      const images: ImageItem[] = uploadedPaths.map((path, index) => ({
+        src: getPublicUrl(path),
+        alt: originalFiles[index]?.name || `image-${index}`,
+      }));
+
+      // Insert to DB with full ImageItem[]
+      console.log('💾 Saving to database...');
+      const { error } = await supabase.from('posts').insert({
+        title: title.trim(),
+        description: description.trim(),
+        category,
+        images, // Full ImageItem[] 
+        user_id: user.id,
+      });
+
+      if (error) throw error;
+
+      console.log('✅ Post created successfully!');
+      resetForm();
+
+    } catch (err: any) {
+      console.error('❌ Error:', err);
+      setError(err.message || 'Failed to create post');
+    } finally {
+      setUploading(false);
     }
-
-    const { error } = await supabase.from('posts').insert({
-      title: title.trim(),
-      description: description.trim(),
-      category,
-      images: uploadedFilePaths,
-      user_id: user.id,
-    });
-
-    if (error) {
-      console.error('Error saving post to database:', error.message);
-      setError('Failed to save post. Please try again.');
-      return;
-    }
-
-    resetForm();
   };
 
   return (
@@ -141,6 +149,7 @@ export default function AdminPage({ data }: AdminPageProps) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter title"
+            disabled={uploading}
             style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #ccc' }}
           />
         </div>
@@ -151,6 +160,7 @@ export default function AdminPage({ data }: AdminPageProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Enter description"
+            disabled={uploading}
             style={{ width: '100%', minHeight: 120, padding: 10, borderRadius: 6, border: '1px solid #ccc' }}
           />
         </div>
@@ -160,6 +170,7 @@ export default function AdminPage({ data }: AdminPageProps) {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as CategoryKey)}
+            disabled={uploading}
             style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #ccc' }}
           >
             {categoryOptions.map((opt) => (
@@ -172,7 +183,14 @@ export default function AdminPage({ data }: AdminPageProps) {
 
         <div style={{ marginBottom: 12 }}>
           <label style={{ display: 'block', marginBottom: 6 }}>Images</label>
-          <input type="file" accept="image/*" multiple onChange={handleFilesChange} style={{ width: '100%' }} />
+          <input 
+            type="file" 
+            accept="image/*" 
+            multiple 
+            onChange={handleFilesChange} 
+            disabled={uploading}
+            style={{ width: '100%' }} 
+          />
         </div>
 
         {previewImages.length > 0 && (
@@ -190,9 +208,19 @@ export default function AdminPage({ data }: AdminPageProps) {
 
         <button
           type="submit"
-          style={{ width: '100%', padding: 12, border: 'none', borderRadius: 6, backgroundColor: '#2563eb', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
+          disabled={uploading}
+          style={{ 
+            width: '100%', 
+            padding: 12, 
+            border: 'none', 
+            borderRadius: 6, 
+            backgroundColor: uploading ? '#94a3b8' : '#2563eb', 
+            color: '#fff', 
+            fontWeight: 600, 
+            cursor: uploading ? 'not-allowed' : 'pointer' 
+          }}
         >
-          Create Post
+          {uploading ? 'Uploading...' : 'Create Post'}
         </button>
       </form>
 
@@ -206,3 +234,4 @@ export default function AdminPage({ data }: AdminPageProps) {
     </div>
   );
 }
+

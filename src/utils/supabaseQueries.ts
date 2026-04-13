@@ -1,12 +1,7 @@
 import { supabase } from '../supabaseClient';
 import type { DocumentaryData } from '../pages/Documentary';
-import type { Post } from '../types';
+import type { Post, ImageItem } from '../types';
 import { getSignedUrl } from './imageHelpers';
-
-interface ImageItem {
-  src: string;
-  alt: string;
-}
 
 interface GalleryItem {
   title: string;
@@ -25,12 +20,23 @@ const getCategoryIcon = (category: string): any => {
   return icons[category] || '📁';
 };
 
-const processPost = async (post: Post): Promise<GalleryItem> => {
-  const imagePromises = post.images.map(async (imgPath: string) => ({
+const processPostImages = async (images: Post['images']): Promise<ImageItem[]> => {
+  // Handle both new format (ImageItem[]) and legacy (string[])
+  if (Array.isArray(images) && images.length > 0 && typeof images[0] === 'object' && 'src' in images[0]) {
+    // Already ImageItem[] - direct use (public URLs)
+    return images as ImageItem[];
+  }
+  
+  // Legacy: string[] paths → signed URLs
+  const imagePromises = (images as string[]).map(async (imgPath: string) => ({
     src: await getSignedUrl(imgPath) || imgPath,
-    alt: `${post.title} image`
+    alt: `Post image`
   }));
-  const images = await Promise.all(imagePromises);
+  return Promise.all(imagePromises);
+};
+
+const processPost = async (post: Post): Promise<GalleryItem> => {
+  const images = await processPostImages(post.images);
   return {
     title: post.title,
     description: post.description,

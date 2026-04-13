@@ -6,7 +6,7 @@ import Home from './pages/Home';
 import About from './pages/About';
 import Programs from './pages/Programs';
 import Partners from './pages/Partners';
-import Admin, { DocumentaryData } from './pages/Admin';
+import AdminPage from './pages/AdminPage';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Documentary from './pages/Documentary';
@@ -14,11 +14,11 @@ import Apply from './pages/Apply';
 import { UserProtectedRoute } from './components/UserProtectedRoute';
 import { AdminProtectedRoute } from './components/AdminProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
+import type { DocumentaryData } from './pages/AdminPage';
 import './index.css';
 
-
 function AppContent() {
-  const [data, setData] = useState<DocumentaryData>({
+  const [data] = useState<DocumentaryData>({
     internationalTours: [],
     nationalTours: [],
     events: [],
@@ -70,7 +70,7 @@ function AppContent() {
 
           <Route path="/admin/*" element={
             <AdminProtectedRoute>
-              <Admin setData={setData} />
+              <AdminPage data={data} />
             </AdminProtectedRoute>
           } />
           <Route path="*" element={<Navigate to="/" replace />} />
