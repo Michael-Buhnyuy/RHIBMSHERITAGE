@@ -35,4 +35,16 @@ export type User = AugmentedUser | null;
 
 export type UserRole = 'admin' | 'user';
 
+export type DocumentaryCategory = 'internationalTours' | 'nationalTours' | 'events' | 'awards';
+
+export interface Post {
+  id: string;
+  title: string;
+  description: string;
+  category: DocumentaryCategory;
+  images: string[];
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+}
 

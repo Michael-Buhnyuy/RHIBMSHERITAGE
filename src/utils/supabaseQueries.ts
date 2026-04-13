@@ -1,5 +1,43 @@
 import { supabase } from '../supabaseClient';
-import { DocumentaryData } from '../pages/Documentary';
+import type { DocumentaryData } from '../pages/Documentary';
+import type { Post } from '../types';
+import { getSignedUrl } from './imageHelpers';
+
+interface ImageItem {
+  src: string;
+  alt: string;
+}
+
+interface GalleryItem {
+  title: string;
+  description: string;
+  images: ImageItem[];
+  categoryIcon: any;
+}
+
+const getCategoryIcon = (category: string): any => {
+  const icons: Record<string, any> = {
+    internationalTours: '🌍',
+    nationalTours: '📍',
+    events: '🎓',
+    awards: '🏆',
+  };
+  return icons[category] || '📁';
+};
+
+const processPost = async (post: Post): Promise<GalleryItem> => {
+  const imagePromises = post.images.map(async (imgPath: string) => ({
+    src: await getSignedUrl(imgPath) || imgPath,
+    alt: `${post.title} image`
+  }));
+  const images = await Promise.all(imagePromises);
+  return {
+    title: post.title,
+    description: post.description,
+    images,
+    categoryIcon: getCategoryIcon(post.category)
+  };
+};
 
 export const loadDocumentaryData = async (): Promise<DocumentaryData> => {
   const { data, error } = await supabase
@@ -9,16 +47,34 @@ export const loadDocumentaryData = async (): Promise<DocumentaryData> => {
 
   if (error) {
     console.error('Error loading data:', error);
-    throw new Error('Failed to load documentary data');
+    return {
+      internationalTours: [],
+      nationalTours: [],
+      events: [],
+      awards: [],
+    };
   }
 
-  // Ensure the data matches the expected structure
-  const structuredData: DocumentaryData = {
-    internationalTours: data.filter((item: any) => item.category === 'internationalTours'),
-    nationalTours: data.filter((item: any) => item.category === 'nationalTours'),
-    events: data.filter((item: any) => item.category === 'events'),
-    awards: data.filter((item: any) => item.category === 'awards'),
-  };
+  const posts = data as Post[] || [];
 
-  return structuredData;
+  const internationalTours = await Promise.all(
+    posts.filter(post => post.category === 'internationalTours').map(processPost)
+  );
+  const nationalTours = await Promise.all(
+    posts.filter(post => post.category === 'nationalTours').map(processPost)
+  );
+  const events = await Promise.all(
+    posts.filter(post => post.category === 'events').map(processPost)
+  );
+  const awards = await Promise.all(
+    posts.filter(post => post.category === 'awards').map(processPost)
+  );
+
+  return {
+    internationalTours,
+    nationalTours,
+    events,
+    awards
+  };
 };
+
