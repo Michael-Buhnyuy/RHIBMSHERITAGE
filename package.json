@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.0",
+    "@types/uuid": "^10.0.0",
     "firebase": "^12.11.0",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.511.0",

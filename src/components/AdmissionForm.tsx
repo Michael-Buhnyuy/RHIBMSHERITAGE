@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import { supabase } from '../supabaseClient';
+import { uploadFiles, uploadFile } from '../utils/storageHelpers';
+import { v4 as uuidv4 } from 'uuid';
 
 const subjectsList = ['Mathematics','Physics','Chemistry','Biology','English','History','Geography','Economics','Computer Science','Literature','Religious Studies']
 
@@ -80,11 +83,15 @@ const AdmissionForm: React.FC = () => {
   const [selectedLevel, setSelectedLevel] = useState('')
   const [availablePrograms, setAvailablePrograms] = useState<string[]>([])
   const [selectedPrograms, setSelectedPrograms] = useState<string[]>([])
-  const [certFiles, setCertFiles] = useState<File[]>([])
+const [certFiles, setCertFiles] = useState<File[]>([])
   const [passportFile, setPassportFile] = useState<File | null>(null)
+  const [certPaths, setCertPaths] = useState<string[]>([])
+  const [passportPath, setPassportPath] = useState<string | null>(null)
+  const [formId] = useState(uuidv4())
+// const [submitting, setSubmitting] = useState(false)
+// const [isLoading, setIsLoading] = useState(false)
   const [isPatient, setIsPatient] = useState(false)
   const location = useLocation()
-  // const navigate = useNavigate() // TODO: implement navigation
 
   useEffect(() => {
     // Prefill from route state
@@ -129,7 +136,7 @@ const AdmissionForm: React.FC = () => {
         const valid = subjects.filter(s => s.subject && s.grade).length
         return valid >= 2
       case 5:
-        return certFiles.length > 0 && !!passportFile
+  return certPaths.length > 0 && !!passportPath
       case 6:
         if (!form.cert_obtained_from || !form.cert_name) return false
         if (isPatient) return !!form.sickness_info
@@ -160,16 +167,71 @@ const AdmissionForm: React.FC = () => {
     if (validCount < 2) return alert('At least 2 valid subjects required')
     if (validCount === 2 && hasReligious) return alert('Religious Studies cannot be one of two subjects')
 
-    // Simulate API submit
-    alert('Application submitted successfully!')
-    
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) throw new Error('Not authenticated');
+
+      const admissionData = {
+        user_id: user.id,
+        form_id: formId,
+        student: {
+          s_fname: form.s_fname!,
+          s_lname: form.s_lname!,
+          s_mname: form.s_mname,
+          s_sex: form.s_sex!,
+          s_dob: form.s_dob,
+          s_phone: form.s_phone!,
+          s_email: form.s_email!,
+          s_address: form.s_address!
+        },
+        parent: {
+          p_fname: form.p_fname!,
+          p_lname: form.p_lname!,
+          p_mname: form.p_mname,
+          p_relationship: form.p_relationship!,
+          p_occupation: form.p_occupation,
+          p_phone: form.p_phone!,
+          p_email: form.p_email!,
+          p_address: form.p_address!
+        },
+        education: {
+          selected_school: selectedSchool,
+          selected_level: selectedLevel,
+          selectedPrograms
+        },
+        subjects: subjects.filter(s => s.subject && s.grade),
+        cert_paths: certPaths,
+        passport_path: passportPath,
+        cert_obtained_from: form.cert_obtained_from!,
+        cert_name: form.cert_name!,
+        is_patient: isPatient,
+        sickness_info: form.sickness_info || null,
+        status: 'pending' as const
+      };
+
+      const { error } = await supabase.from('admissions').insert(admissionData);
+
+      if (error) throw error;
+
+      alert('✅ Application submitted to Supabase!');
+
+    } catch (error: any) {
+      console.error('Submit error:', error);
+      alert('❌ Submission failed: ' + error.message);
+    } finally {
+      // setSubmitting(false);
+    }
+
     // Reset form
-    setForm({})
-    setSubjects([{subject: '', grade: ''}])
-    setSelectedPrograms([])
-    setCertFiles([])
-    setPassportFile(null)
-    setCurrentStep(1)
+    setForm({});
+    setSubjects([{subject: '', grade: ''}]);
+    setSelectedPrograms([]);
+    setCertFiles([]);
+    setCertPaths([]);
+    setPassportFile(null);
+    setPassportPath(null);
+    setIsPatient(false);
+    setCurrentStep(1);
   }
 
   const stepLabels = ['Student Info', 'Parent Info', 'Education', 'Subjects', 'Documents', 'Auxiliaries', 'Review']
@@ -597,9 +659,14 @@ disabled={!!selectedSchool}
               type="file"
               multiple
               accept=".pdf,.jpg,.jpeg,.png"
-              onChange={(e) => {
+              onChange={async (e) => {
                 const files = Array.from(e.target.files || [])
                 setCertFiles(files)
+                // Auto upload
+                if (files.length > 0) {
+                  const paths = await uploadFiles(files, 'admissions', formId)
+                  setCertPaths(paths)
+                }
               }}
               className="hidden"
               id="certificates"
@@ -647,7 +714,17 @@ disabled={!!selectedSchool}
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => setPassportFile(e.target.files ? e.target.files[0] : null)}
+              onChange={async (e) => {
+                const file = e.target.files ? e.target.files[0] : null
+                setPassportFile(file || null)
+                // Auto upload
+                if (file) {
+                  const path = await uploadFile(file, 'admissions', formId)
+                  setPassportPath(path)
+                } else {
+                  setPassportPath(null)
+                }
+              }}
               className="hidden"
               id="passport"
             />

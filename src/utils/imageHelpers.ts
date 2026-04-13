@@ -1,4 +1,4 @@
-import { supabase } from '../supabaseClient';
+
 
 export interface ImageItem {
   src: string;
@@ -15,16 +15,9 @@ export interface GalleryItem {
 export const normalize = (name: string) =>
   name.replace(/[\s-]+/g, '_');
 
-export const getSignedUrl = async (filePath: string): Promise<string | null> => {
-  const { data, error } = await supabase.storage.from('app-files').createSignedUrl(filePath, 60 * 60); // 1 hour expiry
+import { getSignedUrl as storageGetSignedUrl } from './storageHelpers';
 
-  if (error) {
-    console.error('Error creating signed URL:', error.message);
-    return null;
-  }
-
-  return data.signedUrl;
-};
+export const getSignedUrl = storageGetSignedUrl;
 
 export const groupImages = async (modules: Record<string, string>): Promise<Omit<GalleryItem, 'categoryIcon'>[]> => {
   const grouped: Record<string, string[]> = {};

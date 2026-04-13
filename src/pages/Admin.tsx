@@ -1,4 +1,7 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
+import { supabase } from '../supabaseClient';
+import { uploadFile } from '../utils/storageHelpers';
+import { v4 as uuidv4 } from 'uuid';
 import { Globe, MapPin, GraduationCap, Trophy } from 'lucide-react';
 
 export interface ImageItem {
@@ -54,7 +57,7 @@ export default function Admin({ setData }: AdminProps) {
   const [previewImages, setPreviewImages] = useState<ImageItem[]>([]);
   const [error, setError] = useState('');
 
-  const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+const handleImageChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = event.target.files;
     if (!selectedFiles) {
       setFiles([]);
@@ -69,8 +72,15 @@ export default function Admin({ setData }: AdminProps) {
       src: URL.createObjectURL(file),
       alt: file.name,
     }));
-
     setPreviewImages(previews);
+
+    // Upload to Supabase
+    const uploadedPaths: string[] = [];
+    for (const file of fileArray) {
+      const path = await uploadFile(file, 'posts', uuidv4());
+      if (path) uploadedPaths.push(path);
+    }
+    console.log('Uploaded paths:', uploadedPaths);
   };
 
   const resetForm = () => {
@@ -82,7 +92,7 @@ export default function Admin({ setData }: AdminProps) {
     setError('');
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!title.trim() || !description.trim() || files.length === 0) {
@@ -90,19 +100,40 @@ export default function Admin({ setData }: AdminProps) {
       return;
     }
 
-    const newPost: DocumentaryCard = {
-      title: title.trim(),
-      description: description.trim(),
-      images: previewImages,
-      categoryIcon: getIcon(category),
-    };
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) {
+        setError('User not authenticated');
+        return;
+      }
 
-    setData((prev) => ({
-      ...prev,
-      [category]: [newPost, ...prev[category]],
-    }));
+      const { error } = await supabase.from('posts').insert({
+        title: title.trim(),
+        description: description.trim(),
+        category,
+        images: files.map(f => f.name), // paths saved via uploadFile
+        user_id: user.id,
+      });
 
-    resetForm();
+      if (error) throw error;
+
+      const newPost: DocumentaryCard = {
+        title: title.trim(),
+        description: description.trim(),
+        images: previewImages,
+        categoryIcon: getIcon(category),
+      };
+
+      setData((prev) => ({
+        ...prev,
+        [category]: [newPost, ...prev[category]],
+      }));
+
+      resetForm();
+      setError('');
+    } catch (error: any) {
+      setError('Failed to save post: ' + error.message);
+    }
   };
 
   return (
