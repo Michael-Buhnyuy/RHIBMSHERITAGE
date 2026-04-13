@@ -1,3 +1,5 @@
+import { supabase } from '../supabaseClient';
+
 export interface ImageItem {
   src: string;
   alt: string;
@@ -13,7 +15,18 @@ export interface GalleryItem {
 export const normalize = (name: string) =>
   name.replace(/[\s-]+/g, '_');
 
-export const groupImages = (modules: Record<string, string>): Omit<GalleryItem, 'categoryIcon'>[] => {
+export const getSignedUrl = async (filePath: string): Promise<string | null> => {
+  const { data, error } = await supabase.storage.from('app-files').createSignedUrl(filePath, 60 * 60); // 1 hour expiry
+
+  if (error) {
+    console.error('Error creating signed URL:', error.message);
+    return null;
+  }
+
+  return data.signedUrl;
+};
+
+export const groupImages = async (modules: Record<string, string>): Promise<Omit<GalleryItem, 'categoryIcon'>[]> => {
   const grouped: Record<string, string[]> = {};
 
   Object.entries(modules).forEach(([path, src]) => {
@@ -24,14 +37,24 @@ export const groupImages = (modules: Record<string, string>): Omit<GalleryItem, 
     grouped[folder].push(src as string);
   });
 
-  return Object.entries(grouped).map(([folder, images]) => ({
-    title: folder.replace(/_/g, ' '),
-    description: `Gallery for ${folder.replace(/_/g, ' ')}`,
-    images: images.map((src, i) => ({
-      src,
-      alt: `${folder} image ${i + 1}`
-    }))
-  }));
+  const galleries = await Promise.all(
+    Object.entries(grouped).map(async ([folder, images]) => {
+      const signedImages = await Promise.all(
+        images.map(async (src) => {
+          const signedUrl = await getSignedUrl(src);
+          return { src: signedUrl || src, alt: `${folder} image` };
+        })
+      );
+
+      return {
+        title: folder.replace(/_/g, ' '),
+        description: `Gallery for ${folder.replace(/_/g, ' ')}`,
+        images: signedImages,
+      };
+    })
+  );
+
+  return galleries;
 };
 
 // Production-safe image maps using Vite glob importer

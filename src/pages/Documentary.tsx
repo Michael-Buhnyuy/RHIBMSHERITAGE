@@ -7,26 +7,12 @@ import {
   GraduationCap,
   Trophy
 } from 'lucide-react';
-import { supabase } from '../supabaseClient';
-
-type CategoryKey = 'internationalTours' | 'nationalTours' | 'events' | 'awards';
-
-const getIconForCategory = (category: CategoryKey) => {
-  switch (category) {
-    case 'internationalTours':
-      return <Globe className="w-10 h-10 text-blue-600" />;
-    case 'nationalTours':
-      return <MapPin className="w-10 h-10 text-emerald-600" />;
-    case 'events':
-      return <GraduationCap className="w-10 h-10 text-purple-600" />;
-    case 'awards':
-      return <Trophy className="w-10 h-10 text-orange-600" />;
-    default:
-      return null;
-  }
-};
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { loadDocumentaryData } from '../utils/supabaseQueries';
+
+// Added a reference to the type declaration file
+/// <reference path="../utils/supabaseQueries.d.ts" />
 
 /* ================= TYPES ================= */
 
@@ -163,95 +149,33 @@ export default function Documentary({ data }: DocumentaryProps) {
   const [zoomed, setZoomed] = useState(false);
   const [direction, setDirection] = useState(0);
 
-  const [fetchedPosts, setFetchedPosts] = useState<DocumentaryData>({
-    internationalTours: [],
-    nationalTours: [],
-    events: [],
-    awards: [],
-  });
+  const [documentaryData, setDocumentaryData] = useState<DocumentaryData | null>(null);
 
-  // Fetch posts from Supabase
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchData = async () => {
       try {
-        const { data: posts, error } = await supabase
-          .from('posts')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          console.error('Failed to fetch posts:', error);
-          return;
-        }
-
-        if (!posts || posts.length === 0) {
-          console.log('No posts found in Supabase');
-          return;
-        }
-
-        // Group by category and transform
-        const grouped: DocumentaryData = {
-          internationalTours: [],
-          nationalTours: [],
-          events: [],
-          awards: [],
-        };
-
-        posts.forEach((post: any) => {
-          const category = post.category as CategoryKey;
-          if (!grouped[category as keyof DocumentaryData]) return;
-
-          const galleryItem: GalleryItem = {
-            title: post.title,
-            description: post.description,
-            images: (post.images as string[]).map((url: string, index: number) => ({
-              src: url,
-              alt: `${post.title} image ${index + 1}`,
-            })),
-            categoryIcon: getIconForCategory(category),
-          };
-
-          grouped[category as keyof DocumentaryData]!.push(galleryItem);
-        });
-
-        setFetchedPosts(grouped);
-        console.log('Fetched and grouped posts:', grouped);
-      } catch (err) {
-        console.error('Fetch error:', err);
+        const data = await loadDocumentaryData();
+        setDocumentaryData(data);
+      } catch (error) {
+        console.error('Failed to fetch documentary data:', error);
       }
     };
 
-    fetchPosts();
+    fetchData();
   }, []);
 
   // 🛡️ Defensive merge with filtering
-const safeData = {
-  internationalTours: ((data?.internationalTours || []) as GalleryItem[]).filter(isSafeGallery),
-  nationalTours: ((data?.nationalTours || []) as GalleryItem[]).filter(isSafeGallery),
-  events: ((data?.events || []) as GalleryItem[]).filter(isSafeGallery),
-  awards: ((data?.awards || []) as GalleryItem[]).filter(isSafeGallery),
-};
+  const safeData = {
+    internationalTours: ((documentaryData?.internationalTours || []) as GalleryItem[]).filter(isSafeGallery),
+    nationalTours: ((documentaryData?.nationalTours || []) as GalleryItem[]).filter(isSafeGallery),
+    events: ((documentaryData?.events || []) as GalleryItem[]).filter(isSafeGallery),
+    awards: ((documentaryData?.awards || []) as GalleryItem[]).filter(isSafeGallery),
+  };
 
-  const mergedInternationalTours = [
-    ...(fetchedPosts.internationalTours || []),
-    ...safeData.internationalTours,
-    ...internationalTours
-  ].filter(isSafeGallery);
-  const mergedNationalTours = [
-    ...(fetchedPosts.nationalTours || []),
-    ...safeData.nationalTours,
-    ...nationalTours
-  ].filter(isSafeGallery);
-  const mergedEvents = [
-    ...(fetchedPosts.events || []),
-    ...safeData.events,
-    ...events
-  ].filter(isSafeGallery);
-  const mergedAwards = [
-    ...(fetchedPosts.awards || []),
-    ...safeData.awards,
-    ...awards
-  ].filter(isSafeGallery);
+  const mergedInternationalTours = [...safeData.internationalTours, ...internationalTours];
+  const mergedNationalTours = [...safeData.nationalTours, ...nationalTours].filter(isSafeGallery);
+  const mergedEvents = [...safeData.events, ...events];
+  const mergedAwards = [...safeData.awards, ...awards];
 
   // Debug log
   useEffect(() => {

@@ -1,9 +1,18 @@
-import { useState, ChangeEvent, FormEvent } from 'react'
-import { Globe, MapPin, GraduationCap, Trophy } from 'lucide-react';
-
+import { useState, ChangeEvent, FormEvent } from 'react';
 import { supabase } from '../supabaseClient';
-import { type ImageItem, type DocumentaryCard, type CategoryKey } from '../hooks/useUserPosts';
+import { v4 as uuidv4 } from 'uuid';
 
+export interface ImageItem {
+  src: string;
+  alt: string;
+}
+
+export interface DocumentaryCard {
+  title: string;
+  description: string;
+  images: ImageItem[];
+  categoryIcon: React.ReactNode;
+}
 
 export interface DocumentaryData {
   internationalTours: DocumentaryCard[];
@@ -12,8 +21,9 @@ export interface DocumentaryData {
   awards: DocumentaryCard[];
 }
 
-// No props needed - uses Supabase hook
-
+interface AdminPageProps {
+  data: DocumentaryData;
+}
 
 const categoryOptions = [
   { value: 'internationalTours', label: 'INTERNATIONAL TOURS' },
@@ -22,31 +32,29 @@ const categoryOptions = [
   { value: 'awards', label: 'AWARDS' },
 ] as const;
 
+type CategoryKey = keyof DocumentaryData;
 
-
-
-const getIconForCategory = (category: CategoryKey) => {
-  switch (category) {
-    case 'internationalTours':
-      return <Globe className="w-5 h-5" />;
-    case 'nationalTours':
-      return <MapPin className="w-5 h-5" />;
-    case 'events':
-      return <GraduationCap className="w-5 h-5" />;
-    case 'awards':
-      return <Trophy className="w-5 h-5" />;
-    default:
-      return null;
+const uploadFileToSupabase = async (file: File, featureName: string, itemId: string): Promise<string | null> => {
+  const user = (await supabase.auth.getUser()).data.user;
+  if (!user) {
+    console.error('User not authenticated');
+    return null;
   }
+
+  const fileExtension = file.name.split('.').pop();
+  const filePath = `${user.id}/${featureName}/${itemId}/${uuidv4()}.${fileExtension}`;
+
+  const { error } = await supabase.storage.from('app-files').upload(filePath, file);
+
+  if (error) {
+    console.error('Error uploading file:', error.message);
+    return null;
+  }
+
+  return filePath;
 };
 
-interface AdminPageProps {
-  data: DocumentaryData;
-  setData: React.Dispatch<React.SetStateAction<DocumentaryData>>;
-}
-
-export default function AdminPage({ data, setData }: AdminPageProps) {
-
+export default function AdminPage({ data }: AdminPageProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<CategoryKey>('internationalTours');
@@ -90,74 +98,36 @@ export default function AdminPage({ data, setData }: AdminPageProps) {
       return;
     }
 
-    try {
-      setError('');
-
-      // Upload images to Supabase storage
-      const uploadPromises = files.map(async (file) => {
-        const timestamp = Date.now();
-        const fileExt = file.name.split('.').pop() || 'jpg';
-        const randomId = Math.random().toString(36).substr(2, 9);
-        const fileName = `${category.replace(/\//g, '-')}-${timestamp}-${randomId}.${fileExt}`;
-        const storagePath = `posts/${category}/${fileName}`;
-
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('post-images')
-          .upload(storagePath, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
-
-        if (uploadError || !uploadData?.path) {
-          throw new Error(`Upload failed for ${file.name}: ${uploadError?.message || 'Unknown error'}`);
-        }
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('post-images')
-          .getPublicUrl(uploadData.path);
-
-        return publicUrl;
-      });
-
-      const imageUrls: string[] = await Promise.all(uploadPromises);
-
-      // Insert post to Supabase
-      const { error: insertError } = await supabase
-        .from('posts')
-        .insert({
-          category,
-          title: title.trim(),
-          description: description.trim(),
-          images: imageUrls
-        });
-
-      if (insertError) {
-        throw new Error(`Insert failed: ${insertError.message}`);
-      }
-
-      // Create local post for immediate UI update (using uploaded URLs)
-      const newPost: DocumentaryCard = {
-        title: title.trim(),
-        description: description.trim(),
-        images: imageUrls.map((url, index) => ({
-          src: url,
-          alt: `${title.trim()} image ${index + 1}`
-        })),
-        categoryIcon: getIconForCategory(category),
-      };
-
-      setData((prev: DocumentaryData) => ({
-        ...prev,
-        [category]: [newPost, ...prev[category]],
-      }));
-
-
-      resetForm();
-      // Optional: alert('Post created and saved to Supabase!');
-    } catch (err: any) {
-      console.error('Admin submit error:', err);
-      setError(err.message || 'Failed to create post. Please try again.');
+    const user = (await supabase.auth.getUser()).data.user;
+    if (!user) {
+      setError('User not authenticated');
+      return;
     }
+
+    const uploadedFilePaths: string[] = [];
+
+    for (const file of files) {
+      const filePath = await uploadFileToSupabase(file, 'posts', uuidv4());
+      if (filePath) {
+        uploadedFilePaths.push(filePath);
+      }
+    }
+
+    const { error } = await supabase.from('posts').insert({
+      title: title.trim(),
+      description: description.trim(),
+      category,
+      images: uploadedFilePaths,
+      user_id: user.id,
+    });
+
+    if (error) {
+      console.error('Error saving post to database:', error.message);
+      setError('Failed to save post. Please try again.');
+      return;
+    }
+
+    resetForm();
   };
 
   return (
@@ -222,7 +192,7 @@ export default function AdminPage({ data, setData }: AdminPageProps) {
           type="submit"
           style={{ width: '100%', padding: 12, border: 'none', borderRadius: 6, backgroundColor: '#2563eb', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
         >
-          PUBLISH
+          Create Post
         </button>
       </form>
 

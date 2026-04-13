@@ -167,7 +167,7 @@ export default function Admin({ setData }: AdminProps) {
           type="submit"
           style={{ width: '100%', padding: 12, border: 'none', borderRadius: 8, background: '#2563eb', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
         >
-          PUBLISH POST
+          Create Post
         </button>
       </form>
 
