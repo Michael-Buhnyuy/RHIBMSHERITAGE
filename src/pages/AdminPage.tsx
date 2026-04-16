@@ -88,6 +88,8 @@ export default function AdminPage({ data }: AdminPageProps) {
       if (!user) {
         throw new Error('User not authenticated');
       }
+      const { data } = await supabase.auth.getUser();
+console.log("CURRENT USER:", data.user);
 
       // Upload files using new posts format
       console.log('📤 Uploading images...');
