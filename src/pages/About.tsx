@@ -4,9 +4,9 @@ import { founderImages } from '../utils/imageHelpers';
 import { GraduationCap, Globe, Heart } from 'lucide-react';
 
 const founder = {
-  name: "Dr. Emmanuel N. Redemption",
+  name: "Mr Eben Tambe",
   title: "Founder & Visionary",
-  bio: "Dr. Redemption founded RHIBMS in 2009 with a vision to bridge biomedical sciences and management excellence in Cameroon. His leadership has grown the institute from 50 students to over 7,000, establishing international partnerships and community impact initiatives.",
+  bio: "Mr Tambe founded RHIBMS in 2009 with a vision to bridge biomedical sciences and management excellence in Cameroon. His leadership has grown the institute from 50 students to over 7,000, establishing international partnerships and community impact initiatives.",
   image: founderImages.founda
 };
 
@@ -45,7 +45,7 @@ export default function About() {
                 <span>Founder & Visionary</span>
               </div>
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-                Dr. Emmanuel N. Redemption
+                Mr Eben Tambe
               </h2>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
                 {founder.bio}

@@ -70,9 +70,9 @@ export const partnerImages: Record<string, string> = Object.fromEntries(
 );
 
 // Founder image - Vite deprecated `as: 'url'` fix
-const founderGlob = import.meta.glob('../assets/images/founda.jpg?raw', { eager: true });
+const founderGlob = import.meta.glob('../assets/images/founda.jpg', { eager: true, query: '?url', import: 'default' });
 export const founderImages: Record<string, string> = {
-  founda: founderGlob['../assets/images/founda.jpg?raw'] as string
+  founda: founderGlob['../assets/images/founda.jpg'] as string
 };
 
 // Production fallbacks (inline SVG - no files needed)
