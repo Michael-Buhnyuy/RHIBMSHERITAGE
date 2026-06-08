@@ -1,34 +1,13 @@
-# Documentary Image Fix - TODO ✅ COMPLETE
+- [ ] Update `src/components/AdmissionForm.tsx`:
+  - [ ] Add payment fields to form state (`payment_method`, `momo_number`, `payment_amount`).
+  - [ ] Add Step 7 UI before the submit button: dropdown with MTN MOMO / ORANGE MONEY and icons, plus conditional inputs for user number + amount.
+  - [ ] Update Step 7 validation to require payment fields when a method is selected.
+  - [ ] Include payment fields in `admissionData` insert to Supabase.
+  - [ ] Update Step 7 review section to display chosen payment details.
+- [ ] Update standalone HTML template `src/components/form/form.html` (+ `src/components/form/form.js` if needed):
+  - [ ] Add payment section in Step 7 before submit.
+  - [ ] Add corresponding JS validation + review population.
+  - [ ] Include payment fields in submission payload.
+- [ ] Run `npm run build` (or `npm run typecheck` if available) to verify compilation.
 
-## Completed Steps
-### Step 1: ✅ storageHelpers.ts
-- Added `getPublicUrl()`
-- Added `posts/{uuid}-{filename}` format (usePostsFormat=true)
 
-### Step 2: ✅ AdminPage.tsx  
-- Full pipeline: upload → public URLs → ImageItem[] → DB
-- UI loading states, error handling
-
-### Step 3: ✅ supabaseQueries.ts
-- `processPostImages()` handles legacy `string[]` + new `ImageItem[]`
-
-### Step 4: ✅ types/index.ts
-- `Post.images: ImageItem[] | string[]`
-
-### Step 5: ✅ Admin.tsx
-- Deprecated → redirects to AdminPage.tsx
-
-## Test Steps (Manual)
-1. Login as admin → AdminPage
-2. Upload post with images
-3. Check Supabase DB: posts.images → array of `{src, alt}`
-4. Refresh Documentary → new post appears with images (permanent public URLs)
-5. Legacy posts → use signed URLs (fallback)
-
-## Production Ready 🚀
-- Bucket public → permanent URLs
-- Handles existing data
-- UUID unique paths
-- Full error handling
-
-**Clean shutdown**

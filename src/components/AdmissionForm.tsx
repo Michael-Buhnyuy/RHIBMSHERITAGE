@@ -67,7 +67,13 @@ interface FormData {
   cert_name?: string
   sickness_info?: string
   agree?: boolean
+
+  // Payment
+  payment_method?: 'mtn_momo' | 'orange_money'
+  momo_number?: string
+  payment_amount?: string
 }
+
 
 interface Subject {
   subject: string
@@ -141,8 +147,17 @@ const [certFiles, setCertFiles] = useState<File[]>([])
         if (!form.cert_obtained_from || !form.cert_name) return false
         if (isPatient) return !!form.sickness_info
         return true
-      case 7:
-        return !!form.agree
+      case 7: {
+        if (!form.agree) return false
+        if (!form.payment_method) return true
+        const amountNum = form.payment_amount ? Number(form.payment_amount) : NaN
+        const amountOk = Number.isFinite(amountNum) && amountNum > 0
+        const phoneOk = !!(form.momo_number && form.momo_number.trim().length > 0)
+        return amountOk && phoneOk
+
+
+      }
+
       default:
         return true
     }
