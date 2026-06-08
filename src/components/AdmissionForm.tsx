@@ -74,6 +74,12 @@ interface FormData {
   payment_amount?: string
 }
 
+const paymentMethodLabel: Record<NonNullable<FormData['payment_method']>, string> = {
+  mtn_momo: 'MTN MOMO',
+  orange_money: 'ORANGE MONEY',
+}
+
+
 
 interface Subject {
   subject: string
@@ -997,26 +1003,139 @@ disabled={!!selectedSchool}
                     )}
                   </div>
                 </div>
+
+                {/* Payment */}
+                <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-200 md:col-span-2">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                    <svg className="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v10a2 2 0 002 2h6m9-14h-4a2 2 0 00-2 2v10a2 2 0 002 2h4" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 7h10M12 17h10" />
+                    </svg>
+                    Payment
+                  </h3>
+                  <div className="space-y-3 text-lg">
+                    <div>
+                      <span className="font-semibold text-gray-700">Method:</span>{' '}
+                      {form.payment_method ? paymentMethodLabel[form.payment_method] : 'N/A'}
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-700">User Number:</span>{' '}
+                      {form.momo_number || 'N/A'}
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-700">Amount:</span>{' '}
+                      {form.payment_amount ? `${form.payment_amount}` : 'N/A'}
+                    </div>
+                  </div>
+                </div>
+
               </div>
 
-              {/* Agreement */}
-              <div className="p-8 bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-3xl border-4 border-emerald-200">
-                <label className="flex items-center gap-4 p-6 bg-white rounded-2xl shadow-2xl border-2 border-gray-200 hover:border-emerald-400 transition-all cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="w-6 h-6 text-emerald-600 rounded-lg border-2 border-gray-300 focus:ring-emerald-500 focus:ring-2 shrink-0"
-                    checked={form.agree || false}
-                    onChange={(e) => setForm({ ...form, agree: e.target.checked })}
-                    required
-                  />
+          {/* Payment Method */}
+          <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-200">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Payment Method</h3>
+
+            <div className="grid md:grid-cols-2 gap-6 items-start">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">Choose MoMo Payment Method</label>
+                <div className="relative">
+                  <select
+                    value={form.payment_method || ''}
+                    onChange={(e) => {
+                      const val = e.target.value as FormData['payment_method']
+                      setForm({
+                        ...form,
+                        payment_method: val,
+                      })
+                    }}
+                    className="w-full p-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-rhibms-red-500 focus:border-transparent transition-all shadow-sm bg-white text-lg"
+                  >
+                    <option value="">-- Select Payment Method --</option>
+                    <option value="mtn_momo">MTN MOMO</option>
+                    <option value="orange_money">ORANGE MONEY</option>
+                  </select>
+
+                  {form.payment_method && (
+                    <div className="mt-4 flex items-center gap-3">
+                      {form.payment_method === 'mtn_momo' && (
+                        <img
+                          src={new URL('../assets/mtn_momo_icon.png', import.meta.url).toString()}
+                          alt="MTN MoMo"
+                          className="w-10 h-10 object-contain"
+                        />
+                      )}
+                      {form.payment_method === 'orange_money' && (
+                        <img
+                          src={new URL('../assets/Orange_Money_icon.png', import.meta.url).toString()}
+                          alt="Orange Money"
+                          className="w-10 h-10 object-contain"
+                        />
+                      )}
+                      <div className="text-gray-700 font-semibold">
+                        {paymentMethodLabel[form.payment_method]}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {!form.payment_method && (
+                  <p className="text-sm text-gray-500 mt-3 italic">Payment is optional, but if you choose one you must fill the required fields.</p>
+                )}
+              </div>
+
+              <div>
+                <div className="grid gap-4">
                   <div>
-                    <div className="text-xl font-bold text-gray-900">I confirm all information is correct</div>
-                    <div className="text-sm text-gray-600 mt-1">Once submitted, this application is final and cannot be changed.</div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      {form.payment_method ? 'User Number (MoMo Deduction)' : 'User Number'}
+                      {form.payment_method ? ' *' : ''}
+                    </label>
+                    <input
+                      value={form.momo_number || ''}
+                      onChange={(e) => setForm({ ...form, momo_number: e.target.value })}
+                      placeholder="e.g., 07xxxxxxxx"
+                      className="w-full p-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-rhibms-sky-500 focus:border-transparent transition-all shadow-sm bg-white text-lg"
+                      required={!!form.payment_method}
+                    />
                   </div>
-                </label>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      {form.payment_method ? 'Amount' : 'Amount'} {form.payment_method ? ' *' : ''}
+                    </label>
+                    <input
+                      value={form.payment_amount || ''}
+                      onChange={(e) => setForm({ ...form, payment_amount: e.target.value })}
+                      placeholder="e.g., 50000"
+                      inputMode="decimal"
+                      className="w-full p-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-rhibms-sky-500 focus:border-transparent transition-all shadow-sm bg-white text-lg"
+                      required={!!form.payment_method}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-          )}
+          </div>
+
+          {/* Agreement */}
+          <div className="p-8 bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-3xl border-4 border-emerald-200">
+            <label className="flex items-center gap-4 p-6 bg-white rounded-2xl shadow-2xl border-2 border-gray-200 hover:border-emerald-400 transition-all cursor-pointer">
+              <input
+                type="checkbox"
+                className="w-6 h-6 text-emerald-600 rounded-lg border-2 border-gray-300 focus:ring-emerald-500 focus:ring-2 shrink-0"
+                checked={form.agree || false}
+                onChange={(e) => setForm({ ...form, agree: e.target.checked })}
+                required
+              />
+              <div>
+                <div className="text-xl font-bold text-gray-900">I confirm all information is correct</div>
+                <div className="text-sm text-gray-600 mt-1">Once submitted, this application is final and cannot be changed.</div>
+              </div>
+            </label>
+          </div>
+        </div>
+      )}
+
 
           {/* Navigation Buttons */}
           <div className="flex gap-4 mt-12 pt-8 border-t border-gray-200">

@@ -1,13 +1,11 @@
-- [ ] Update `src/components/AdmissionForm.tsx`:
-  - [ ] Add payment fields to form state (`payment_method`, `momo_number`, `payment_amount`).
-  - [ ] Add Step 7 UI before the submit button: dropdown with MTN MOMO / ORANGE MONEY and icons, plus conditional inputs for user number + amount.
-  - [ ] Update Step 7 validation to require payment fields when a method is selected.
-  - [ ] Include payment fields in `admissionData` insert to Supabase.
-  - [ ] Update Step 7 review section to display chosen payment details.
-- [ ] Update standalone HTML template `src/components/form/form.html` (+ `src/components/form/form.js` if needed):
-  - [ ] Add payment section in Step 7 before submit.
-  - [ ] Add corresponding JS validation + review population.
-  - [ ] Include payment fields in submission payload.
-- [ ] Run `npm run build` (or `npm run typecheck` if available) to verify compilation.
+# TODO
 
+- [ ] Implement payment method UI in `src/components/AdmissionForm.tsx` (Step 7):
+  - [ ] Add dropdown to choose MTN MOMO vs Orange Money
+  - [ ] Display MTN and Orange Money icons beside the selected method
+  - [ ] Show inputs for `momo_number` and `payment_amount` when a method is selected
+  - [ ] Include payment details in Step 7 Review summary
+  - [ ] Ensure validation `validateStep(7)` supports the new UI (existing logic already present)
+
+- [ ] Run `npm run dev` or `npm run build` to verify TypeScript/React compilation.
 
